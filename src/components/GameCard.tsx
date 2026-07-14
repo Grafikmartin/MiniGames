@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { gameSprites } from '../data/gameSprites';
 import type { GameInfo } from '../data/games';
+import { SnakeCardIcon } from '../games/snake/SnakeCardIcon';
+import { VierGewinntCardIcon } from '../games/vier-gewinnt/VierGewinntCardIcon';
 import { PixelSprite } from './PixelSprite';
 import './GameCard.css';
 
@@ -14,10 +16,20 @@ export function GameCard({ game }: GameCardProps) {
 
   const content = (
     <>
-      {sprite && (
+      {game.id === 'vier-gewinnt' ? (
         <div className="game-card-icon">
-          <PixelSprite sprite={sprite} pixelSize={6} />
+          <VierGewinntCardIcon />
         </div>
+      ) : game.id === 'snake' ? (
+        <div className="game-card-icon">
+          <SnakeCardIcon />
+        </div>
+      ) : (
+        sprite && (
+          <div className="game-card-icon">
+            <PixelSprite sprite={sprite} pixelSize={6} />
+          </div>
+        )
       )}
       <h2 className="game-card-title">{game.title}</h2>
       <p className="game-card-desc">{game.description}</p>

@@ -1,0 +1,22 @@
+.snake-card-icon {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 2px;
+  color: inherit;
+}
+
+.snake-card-icon__cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.snake-card-icon__cell--food {
+  color: #99ff99;
+}
+
+.game-card--available:hover .snake-card-icon__cell--food {
+  color: inherit;
+}
