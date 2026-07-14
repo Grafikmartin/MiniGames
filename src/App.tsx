@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { SpaceInvaders } from './games/space-invaders/SpaceInvaders';
+import { Snake } from './games/snake/Snake';
 import { ComingSoonPage } from './pages/ComingSoonPage';
 import { HomePage } from './pages/HomePage';
 
@@ -14,7 +15,7 @@ function AppRoutes() {
         <Route path="/space-invaders" element={<SpaceInvaders />} />
         <Route path="/vier-gewinnt" element={<ComingSoonPage />} />
         <Route path="/ping-pong" element={<ComingSoonPage />} />
-        <Route path="/snake" element={<ComingSoonPage />} />
+        <Route path="/snake" element={<Snake />} />
       </Routes>
     </Layout>
   );

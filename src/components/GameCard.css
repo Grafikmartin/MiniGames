@@ -29,8 +29,10 @@
 }
 
 .game-card-icon {
-  font-size: 48px;
-  line-height: 1;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .game-card-title {
