@@ -21,7 +21,7 @@ export const games: GameInfo[] = [
     title: 'Vier gewinnt',
     description: 'Verbinde vier Steine in einer Reihe und gewinne.',
     path: '/vier-gewinnt',
-    status: 'coming-soon',
+    status: 'available',
   },
   {
     id: 'ping-pong',

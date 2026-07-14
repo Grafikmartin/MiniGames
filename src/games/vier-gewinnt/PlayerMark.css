@@ -1,0 +1,31 @@
+.vg-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  inset: 0;
+  color: #33ff33;
+}
+
+.vg-mark-sprite {
+  width: 74%;
+  height: 74%;
+}
+
+.vg-mark-sprite .pixel-sprite {
+  width: 100%;
+  height: 100%;
+}
+
+.vg-mark--fall {
+  animation: vg-fall 0.45s ease-out forwards;
+}
+
+@keyframes vg-fall {
+  from {
+    transform: translateY(-480%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
