@@ -28,7 +28,7 @@ export const games: GameInfo[] = [
     title: 'Ping Pong',
     description: 'Klassisches Paddle-Duell gegen den Computer.',
     path: '/ping-pong',
-    status: 'coming-soon',
+    status: 'available',
   },
   {
     id: 'snake',

@@ -1,0 +1,212 @@
+.pp-wrapper {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  touch-action: none;
+}
+
+.pp-menu {
+  width: 100%;
+  border: 2px solid #33ff33;
+  background: #111;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.pp-menu h1 {
+  font-size: clamp(1rem, 5vw, 20px);
+  margin-bottom: 8px;
+}
+
+.pp-settings-row {
+  display: flex;
+  gap: 12px;
+}
+
+.pp-settings-row label,
+.pp-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 8px;
+  text-align: left;
+}
+
+.pp-menu select,
+.pp-menu input[type='number'] {
+  font-family: inherit;
+  font-size: 8px;
+  background: #000;
+  color: #33ff33;
+  border: 1px solid #33ff33;
+  padding: 8px;
+}
+
+.pp-modes span {
+  font-size: 8px;
+}
+
+.pp-mode-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.pp-mode-btns button {
+  flex: 1;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 8px;
+  background: #000;
+  color: #33ff33;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+
+.pp-mode-btns button.active {
+  border-color: #33ff33;
+  background: #33ff33;
+  color: #000;
+}
+
+.pp-mode-desc {
+  font-size: 7px;
+  opacity: 0.7;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.pp-sound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.pp-start-btn {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 12px 24px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #33ff33;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.pp-start-btn:hover {
+  background: #33ff33;
+  color: #000;
+}
+
+.pp-hi {
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.pp-hi-desc {
+  font-size: 7px;
+  opacity: 0.7;
+}
+
+.pp-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8px;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.pp-controls {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pp-ctrl-icon {
+  font-size: 22px;
+  cursor: pointer;
+  user-select: none;
+  color: #33ff33;
+}
+
+.pp-console {
+  position: relative;
+  border: 8px solid #555;
+  padding: 8px;
+  background: #111;
+  width: 100%;
+}
+
+.pp-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  image-rendering: pixelated;
+  touch-action: none;
+}
+
+.pp-overlay {
+  position: absolute;
+  inset: 8px;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 16px;
+}
+
+.pp-overlay h2 {
+  font-size: 12px;
+}
+
+.pp-overlay p {
+  font-size: 8px;
+  line-height: 1.8;
+}
+
+.pp-overlay button {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 10px 20px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #33ff33;
+  cursor: pointer;
+}
+
+.pp-overlay button:hover {
+  background: #33ff33;
+  color: #000;
+}
+
+.pp-hint-desktop {
+  display: none;
+  width: 100%;
+  margin-top: 8px;
+  font-size: 8px;
+  line-height: 1.6;
+  color: #33ff33;
+  opacity: 0.75;
+  text-align: center;
+}
+
+@media (pointer: fine) and (hover: hover) {
+  .pp-hint-desktop {
+    display: block;
+  }
+}
