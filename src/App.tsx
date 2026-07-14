@@ -1,0 +1,29 @@
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { SpaceInvaders } from './games/space-invaders/SpaceInvaders';
+import { ComingSoonPage } from './pages/ComingSoonPage';
+import { HomePage } from './pages/HomePage';
+
+function AppRoutes() {
+  const { pathname } = useLocation();
+
+  return (
+    <Layout showBack={pathname !== '/'}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/space-invaders" element={<SpaceInvaders />} />
+        <Route path="/vier-gewinnt" element={<ComingSoonPage />} />
+        <Route path="/ping-pong" element={<ComingSoonPage />} />
+        <Route path="/snake" element={<ComingSoonPage />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
+}
