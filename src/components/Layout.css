@@ -6,6 +6,33 @@
   padding: 24px 16px;
 }
 
+@media (max-width: 720px) {
+  .layout {
+    padding: 10px 4px 8px;
+    padding-left: max(4px, env(safe-area-inset-left));
+    padding-right: max(4px, env(safe-area-inset-right));
+  }
+
+  .layout-back {
+    margin-bottom: 10px;
+    font-size: 10px;
+    min-height: 36px;
+    padding: 4px 2px 4px 0;
+  }
+
+  .layout-back-arrow {
+    border-top-width: 10px;
+    border-bottom-width: 10px;
+    border-right-width: 16px;
+  }
+
+  .layout-footer {
+    margin-top: 20px;
+    padding-top: 8px;
+    font-size: 8px;
+  }
+}
+
 .layout-back {
   align-self: flex-start;
   display: inline-flex;

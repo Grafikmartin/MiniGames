@@ -18,10 +18,7 @@
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
   gap: 2px;
-  width: min(
-    calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)),
-    420px
-  );
+  width: min(100%, 420px);
   aspect-ratio: 1;
   padding: 4px;
   border: 3px solid #555;
@@ -58,13 +55,22 @@
 }
 
 @media (max-width: 720px), (max-height: 720px) {
+  .bs-board-wrap {
+    width: 100%;
+    padding: 0 2px;
+    box-sizing: border-box;
+  }
+
   .bs-board {
     width: min(
-      calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)),
+      100%,
       calc(
-        100dvh - var(--bs-ui-chrome, 400px) - env(safe-area-inset-bottom, 0px)
+        100dvh - var(--bs-ui-chrome, 200px) - env(safe-area-inset-bottom, 0px)
       ),
       420px
     );
+    gap: 1px;
+    padding: 2px;
+    border-width: 2px;
   }
 }
