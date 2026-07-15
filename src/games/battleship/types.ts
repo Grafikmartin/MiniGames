@@ -3,6 +3,7 @@ export type Orientation = 'horizontal' | 'vertical';
 export type ShipType = 'battleship' | 'cruiser' | 'frigate' | 'submarine';
 
 export type GamePhase =
+  | 'modeSelect'
   | 'placement'
   | 'aiPlacement'
   | 'playerSelectingTargets'
@@ -67,8 +68,11 @@ export interface PlacementPreview {
   valid: boolean;
 }
 
+export type GameMode = 'classic' | 'dynamic';
+
 export interface BattleshipState {
   phase: GamePhase;
+  gameMode: GameMode;
   playerBoard: Board;
   playerShips: Ship[];
   enemyBoard: Board;
@@ -81,6 +85,8 @@ export interface BattleshipState {
   selectedTargets: Coordinate[];
   cursor: Coordinate;
   shotsRemaining: number;
+  playerShotsPerTurn: number;
+  aiShotsPerTurn: number;
   activeBoard: 'own' | 'enemy';
   message: GameMessage;
   animatingCells: Coordinate[];
@@ -92,6 +98,7 @@ export interface BattleshipState {
 
 export type BattleshipAction =
   | { type: 'RESET' }
+  | { type: 'SELECT_GAME_MODE'; mode: GameMode }
   | { type: 'RANDOM_PLACE' }
   | { type: 'MOVE_PREVIEW'; delta: { dr: number; dc: number } }
   | { type: 'ROTATE_PREVIEW' }

@@ -127,7 +127,13 @@ export function useBattleshipGame() {
       unlockAudio();
       const s = stateRef.current;
       if (s.phase === 'victory' || s.phase === 'defeat') {
-        if (e.key === 'Enter' || e.key === ' ') dispatch({ type: 'RESET' });
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          dispatch({ type: 'SET_ACTIVE_BOARD', board: 'own' });
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          e.preventDefault();
+          dispatch({ type: 'SET_ACTIVE_BOARD', board: 'enemy' });
+        }
         return;
       }
 
@@ -201,8 +207,10 @@ export function useBattleshipGame() {
     dispatch: safeDispatch,
     onCellPointer,
     currentShipLabel,
+    isModeSelect: state.phase === 'modeSelect',
     isPlacement: state.phase === 'placement',
-    isBattle: !['placement', 'victory', 'defeat', 'aiPlacement'].includes(state.phase),
+    isBattle: !['modeSelect', 'placement', 'victory', 'defeat', 'aiPlacement'].includes(state.phase),
+    showBattlefield: !['modeSelect', 'placement', 'aiPlacement'].includes(state.phase),
     gameOver: state.phase === 'victory' || state.phase === 'defeat',
   };
 }

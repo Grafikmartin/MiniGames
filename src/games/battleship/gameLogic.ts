@@ -1,6 +1,8 @@
 import {
   ALLOW_SHIPS_TO_TOUCH,
   BOARD_SIZE,
+  DYNAMIC_SHOTS_TIER_HIGH_MIN,
+  DYNAMIC_SHOTS_TIER_MID_MIN,
   PLACEMENT_ORDER,
   SHIP_LENGTHS,
   SHOTS_PER_TURN,
@@ -8,6 +10,7 @@ import {
 import type {
   Board,
   Coordinate,
+  GameMode,
   HuntState,
   Orientation,
   PlacementPreview,
@@ -204,6 +207,20 @@ export function countRemainingShipCells(ships: Ship[]): number {
 
 export function countRemainingShips(ships: Ship[]): number {
   return ships.filter((s) => !s.sunk).length;
+}
+
+/** Flottenstärke: Summe der Längen aller nicht versenkten Schiffe (Treffer zählen nicht). */
+export function fleetStrength(ships: Ship[]): number {
+  return ships.filter((s) => !s.sunk).reduce((sum, s) => sum + s.length, 0);
+}
+
+/** Schüsse pro Zug aus Flottenstärke – zentrale Berechnung für Spieler und KI. */
+export function shotsPerTurnForFleet(strength: number, mode: GameMode): number {
+  if (mode === 'classic') return SHOTS_PER_TURN;
+  if (strength <= 0) return 0;
+  if (strength >= DYNAMIC_SHOTS_TIER_HIGH_MIN) return 3;
+  if (strength >= DYNAMIC_SHOTS_TIER_MID_MIN) return 2;
+  return 1;
 }
 
 export function allShipsSunk(ships: Ship[]): boolean {

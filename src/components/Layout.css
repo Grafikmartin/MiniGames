@@ -8,14 +8,33 @@
 
 .layout-back {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   color: #33ff33;
   text-decoration: none;
   font-size: 12px;
   margin-bottom: 24px;
+  padding: 8px 4px 8px 0;
+  min-height: 44px;
   opacity: 0.8;
   transition: opacity 0.2s;
 }
 
+.layout-back-arrow {
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 14px solid transparent;
+  border-bottom: 14px solid transparent;
+  border-right: 22px solid #33ff33;
+  flex-shrink: 0;
+}
+
 .layout-back:hover {
   opacity: 1;
+}
+
+.layout-back:hover .layout-back-arrow {
+  filter: brightness(1.15);
 }

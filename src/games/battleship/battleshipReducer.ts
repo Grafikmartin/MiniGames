@@ -13,9 +13,11 @@ import {
   createEmptyRadar,
   createShip,
   defaultPreviewOrigin,
+  fleetStrength,
   markSunkOnRadar,
   placeShipOnBoard,
   randomPlacement,
+  shotsPerTurnForFleet,
   toggleOrientation,
   isAlreadyShot,
 } from './gameLogic';
@@ -37,30 +39,46 @@ function msg(text: string): GameMessage {
 }
 
 export function createInitialState(): BattleshipState {
-  const board = createEmptyBoard();
-  const type = PLACEMENT_ORDER[0];
-  const origin = defaultPreviewOrigin(0);
   return {
-    phase: 'placement',
-    playerBoard: board,
+    phase: 'modeSelect',
+    gameMode: 'classic',
+    playerBoard: createEmptyBoard(),
     playerShips: [],
     enemyBoard: createEmptyBoard(),
     enemyShips: [],
     radar: createEmptyRadar(),
     placementQueue: [...PLACEMENT_ORDER],
     placementIndex: 0,
-    preview: buildPreview(type, origin, 'horizontal', board),
+    preview: null,
     pendingShot: null,
     selectedTargets: [],
     cursor: { row: 0, col: 0 },
     shotsRemaining: SHOTS_PER_TURN,
+    playerShotsPerTurn: SHOTS_PER_TURN,
+    aiShotsPerTurn: SHOTS_PER_TURN,
     activeBoard: 'own',
-    message: msg('Platziere deine Flotte.'),
+    message: msg('Wähle einen Spielmodus.'),
     animatingCells: [],
     soundEnabled: true,
     aiHunt: createInitialHuntState(),
     aiMemory: createEmptyRadar(),
     aiShotsRemaining: 0,
+  };
+}
+
+function turnShotsForSide(state: BattleshipState, side: 'player' | 'ai'): number {
+  const ships = side === 'player' ? state.playerShips : state.enemyShips;
+  return shotsPerTurnForFleet(fleetStrength(ships), state.gameMode);
+}
+
+function startPlacement(state: BattleshipState): BattleshipState {
+  const type = PLACEMENT_ORDER[0];
+  const origin = defaultPreviewOrigin(0);
+  return {
+    ...state,
+    phase: 'placement',
+    preview: buildPreview(type, origin, 'horizontal', state.playerBoard),
+    message: msg('Platziere deine Flotte.'),
   };
 }
 
@@ -73,6 +91,7 @@ function clampCursor(c: Coordinate): Coordinate {
 
 function finishPlacement(state: BattleshipState): BattleshipState {
   const enemy = randomPlacement();
+  const playerShots = turnShotsForSide(state, 'player');
   return {
     ...state,
     phase: 'playerSelectingTargets',
@@ -81,7 +100,9 @@ function finishPlacement(state: BattleshipState): BattleshipState {
     preview: null,
     activeBoard: 'enemy',
     message: msg('Wähle ein Ziel und feuere.'),
-    shotsRemaining: SHOTS_PER_TURN,
+    shotsRemaining: playerShots,
+    playerShotsPerTurn: playerShots,
+    aiShotsPerTurn: turnShotsForSide({ ...state, enemyShips: enemy.ships }, 'ai'),
     aiHunt: createInitialHuntState(),
     aiMemory: createEmptyRadar(),
   };
@@ -133,6 +154,7 @@ function resolvePlayerSingleShot(state: BattleshipState): BattleshipState {
       phase: 'victory',
       pendingShot: null,
       selectedTargets: [],
+      activeBoard: 'enemy',
       message: msg('SIEG!'),
     };
   }
@@ -162,8 +184,8 @@ function resolvePlayerSingleShot(state: BattleshipState): BattleshipState {
     pendingShot: null,
     selectedTargets: [],
     activeBoard: 'own',
-    shotsRemaining: SHOTS_PER_TURN,
-    aiShotsRemaining: SHOTS_PER_TURN,
+    aiShotsPerTurn: turnShotsForSide({ ...state, enemyShips: ships }, 'ai'),
+    aiShotsRemaining: turnShotsForSide({ ...state, enemyShips: ships }, 'ai'),
     message: msg(messageText),
   };
 }
@@ -179,12 +201,16 @@ function updateAiMemorySingle(
 function prepareAiShot(state: BattleshipState): BattleshipState {
   const { shots } = pickAiShots(state.aiMemory, state.aiHunt, 1);
   const coord = shots[0];
+  const aiTurnTotal = state.aiShotsPerTurn;
+  const aiShotIndex = aiTurnTotal - state.aiShotsRemaining + 1;
   if (!coord) {
+    const playerShots = turnShotsForSide(state, 'player');
     return {
       ...state,
       phase: 'playerSelectingTargets',
       activeBoard: 'enemy',
-      shotsRemaining: SHOTS_PER_TURN,
+      shotsRemaining: playerShots,
+      playerShotsPerTurn: playerShots,
       aiShotsRemaining: 0,
       message: msg('Gegner hat keine Ziele mehr.'),
     };
@@ -195,7 +221,7 @@ function prepareAiShot(state: BattleshipState): BattleshipState {
     phase: 'aiResolvingShots',
     pendingShot: coord,
     animatingCells: [coord],
-    message: msg(`Gegner feuert… (${SHOTS_PER_TURN - state.aiShotsRemaining + 1}/${SHOTS_PER_TURN})`),
+    message: msg(`Gegner feuert… (${aiShotIndex}/${aiTurnTotal})`),
   };
 }
 
@@ -228,6 +254,7 @@ function resolveAiSingleShot(state: BattleshipState): BattleshipState {
       phase: 'defeat',
       pendingShot: null,
       aiShotsRemaining: 0,
+      activeBoard: 'own',
       message: msg('GAME OVER'),
     };
   }
@@ -249,6 +276,8 @@ function resolveAiSingleShot(state: BattleshipState): BattleshipState {
     };
   }
 
+  const playerShots = turnShotsForSide({ ...state, playerShips: ships }, 'player');
+
   return {
     ...state,
     playerBoard: board,
@@ -259,7 +288,8 @@ function resolveAiSingleShot(state: BattleshipState): BattleshipState {
     pendingShot: null,
     activeBoard: 'enemy',
     aiShotsRemaining: 0,
-    shotsRemaining: SHOTS_PER_TURN,
+    shotsRemaining: playerShots,
+    playerShotsPerTurn: playerShots,
     message: msg(messageText),
   };
 }
@@ -268,6 +298,9 @@ export function battleshipReducer(state: BattleshipState, action: BattleshipActi
   switch (action.type) {
     case 'RESET':
       return createInitialState();
+
+    case 'SELECT_GAME_MODE':
+      return startPlacement({ ...state, gameMode: action.mode });
 
     case 'TOGGLE_SOUND':
       return { ...state, soundEnabled: !state.soundEnabled };

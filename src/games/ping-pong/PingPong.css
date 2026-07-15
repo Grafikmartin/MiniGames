@@ -28,9 +28,12 @@
   gap: 12px;
 }
 
-.pp-settings-row label,
-.pp-field {
+.pp-settings-row .pp-field {
   flex: 1;
+  min-width: 0;
+}
+
+.pp-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -38,41 +41,76 @@
   text-align: left;
 }
 
-.pp-menu select,
+.pp-field > span {
+  color: #33ff33;
+}
+
 .pp-menu input[type='number'] {
   font-family: inherit;
   font-size: 8px;
   background: #000;
   color: #33ff33;
-  border: 1px solid #33ff33;
+  border: 2px solid #555;
   padding: 8px;
+  width: 100%;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.pp-menu input[type='number']:focus {
+  outline: none;
+  border-color: #33ff33;
+}
+
+.pp-menu input[type='number']:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pp-menu input[type='number']::-webkit-inner-spin-button,
+.pp-menu input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .pp-modes span {
   font-size: 8px;
+  color: #33ff33;
 }
 
-.pp-mode-btns {
+.pp-option-btns {
   display: flex;
-  gap: 8px;
-  margin-top: 6px;
+  gap: 6px;
+  margin-top: 2px;
 }
 
-.pp-mode-btns button {
+.pp-option-btns button {
   flex: 1;
   font-family: inherit;
-  font-size: 8px;
-  padding: 8px;
+  font-size: 7px;
+  line-height: 1.4;
+  padding: 8px 4px;
+  min-height: 36px;
   background: #000;
   color: #33ff33;
-  border: 1px solid #555;
+  border: 2px solid #555;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
-.pp-mode-btns button.active {
+.pp-option-btns button:hover:not(.active) {
+  border-color: #33ff33;
+}
+
+.pp-option-btns button.active {
   border-color: #33ff33;
   background: #33ff33;
   color: #000;
+}
+
+.pp-option-btns--triple button {
+  font-size: 6px;
+  padding: 8px 2px;
 }
 
 .pp-mode-desc {
@@ -89,6 +127,36 @@
   gap: 8px;
   font-size: 8px;
   cursor: pointer;
+}
+
+.pp-sound input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 2px solid #33ff33;
+  background: #000;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.pp-sound input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #33ff33;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.pp-sound input[type='checkbox']:focus-visible {
+  outline: 2px solid #33ff33;
+  outline-offset: 2px;
 }
 
 .pp-start-btn {

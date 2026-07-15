@@ -23,6 +23,7 @@ interface BattleshipBoardProps {
   animatingCells?: Coordinate[];
   disabled?: boolean;
   active?: boolean;
+  revealAllShips?: boolean;
   onCellPointer?: (coord: Coordinate) => void;
 }
 
@@ -38,6 +39,7 @@ export function BattleshipBoard({
   animatingCells = [],
   disabled = false,
   active = false,
+  revealAllShips = false,
   onCellPointer,
 }: BattleshipBoardProps) {
   const previewCells = new Set<string>();
@@ -107,7 +109,7 @@ export function BattleshipBoard({
               miss = radarCell.shot === 'miss';
               hit = radarCell.shot === 'hit' || radarCell.shot === 'sunk';
               sunk = radarCell.shot === 'sunk';
-              if (sunk && shipInfo) {
+              if ((sunk || revealAllShips) && shipInfo) {
                 showShip = true;
                 part = getSegmentPart(shipInfo.index, shipInfo.ship.length);
                 orientation = shipInfo.ship.orientation;

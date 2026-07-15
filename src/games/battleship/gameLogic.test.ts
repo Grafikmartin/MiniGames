@@ -8,9 +8,11 @@ import {
   createEmptyBoard,
   createEmptyRadar,
   createShip,
+  fleetStrength,
   isAlreadyShot,
   placeShipOnBoard,
   randomPlacement,
+  shotsPerTurnForFleet,
   toggleOrientation,
   toggleTarget,
   totalFleetCells,
@@ -167,5 +169,41 @@ describe('Flottengrößen', () => {
   it('summiert korrekt', () => {
     const total = PLACEMENT_ORDER.reduce((sum, t) => sum + SHIP_LENGTHS[t], 0);
     expect(total).toBe(17);
+  });
+});
+
+describe('Dynamischer Modus', () => {
+  function makeFleet(sunkTypes: string[]) {
+    return PLACEMENT_ORDER.map((type, i) => {
+      const ship = createShip(type, { row: i, col: 0 }, 'horizontal', `${type}-${i}`);
+      if (sunkTypes.includes(`${type}-${i}`) || sunkTypes.includes(type)) {
+        ship.hits = ship.length;
+        ship.sunk = true;
+      }
+      return ship;
+    });
+  }
+
+  it('berechnet Flottenstärke nur aus nicht versenkten Schiffen', () => {
+    const ships = makeFleet(['battleship-0']);
+    expect(fleetStrength(ships)).toBe(12);
+    const damaged = createShip('battleship', { row: 0, col: 0 }, 'horizontal');
+    damaged.hits = 2;
+    expect(fleetStrength([damaged])).toBe(5);
+  });
+
+  it('mappt Flottenstärke auf Schüsse pro Zug', () => {
+    expect(shotsPerTurnForFleet(17, 'dynamic')).toBe(3);
+    expect(shotsPerTurnForFleet(12, 'dynamic')).toBe(3);
+    expect(shotsPerTurnForFleet(10, 'dynamic')).toBe(2);
+    expect(shotsPerTurnForFleet(5, 'dynamic')).toBe(1);
+    expect(shotsPerTurnForFleet(2, 'dynamic')).toBe(1);
+    expect(shotsPerTurnForFleet(0, 'dynamic')).toBe(0);
+  });
+
+  it('lässt klassischen Modus unverändert', () => {
+    expect(shotsPerTurnForFleet(17, 'classic')).toBe(3);
+    expect(shotsPerTurnForFleet(2, 'classic')).toBe(3);
+    expect(shotsPerTurnForFleet(0, 'classic')).toBe(3);
   });
 });

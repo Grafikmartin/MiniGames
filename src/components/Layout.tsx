@@ -12,7 +12,8 @@ export function Layout({ children, showBack = true }: LayoutProps) {
     <div className="layout">
       {showBack && (
         <Link to="/" className="layout-back">
-          ← Minispiele
+          <span className="layout-back-arrow" aria-hidden="true" />
+          Minispiele
         </Link>
       )}
       {children}

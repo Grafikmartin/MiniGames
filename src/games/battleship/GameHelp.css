@@ -1,0 +1,59 @@
+.bs-help {
+  width: 100%;
+  max-width: 420px;
+  font-size: 7px;
+  line-height: 1.7;
+  color: #1a661a;
+  text-align: left;
+}
+
+.bs-help--compact {
+  max-width: 100%;
+}
+
+.bs-help-section + .bs-help-section {
+  margin-top: 10px;
+}
+
+.bs-help-title {
+  font-size: 8px;
+  color: #33ff33;
+  margin-bottom: 4px;
+  font-weight: normal;
+}
+
+.bs-help-list {
+  margin: 6px 0 6px 12px;
+  padding: 0;
+}
+
+.bs-help-note {
+  opacity: 0.85;
+}
+
+.bs-mode-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.bs-mode-title {
+  font-size: 10px;
+  color: #33ff33;
+  text-align: center;
+}
+
+.bs-mode-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.bs-btn--mode {
+  min-width: 140px;
+}

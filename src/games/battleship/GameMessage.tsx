@@ -17,6 +17,7 @@ export function GameMessageBar({ message, phase }: GameMessageProps) {
 
 function phaseLabel(phase: string): string {
   switch (phase) {
+    case 'modeSelect': return '';
     case 'placement': return 'PLATZIERUNG · ';
     case 'playerSelectingTargets':
     case 'playerResolvingShots': return 'DEIN ZUG · ';

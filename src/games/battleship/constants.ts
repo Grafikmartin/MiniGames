@@ -3,6 +3,15 @@ import type { ShipType } from './types';
 export const BOARD_SIZE = 10;
 export const SHOTS_PER_TURN = 3;
 
+/** Grenzen für Schüsse pro Zug im Modus „Dynamisch“. */
+export const DYNAMIC_SHOTS_TIER_HIGH_MIN = 12;
+export const DYNAMIC_SHOTS_TIER_MID_MIN = 6;
+
+export const GAME_MODE_LABELS = {
+  classic: 'Klassisch',
+  dynamic: 'Dynamisch',
+} as const;
+
 /** Schiffe dürfen sich berühren, wenn true. */
 export const ALLOW_SHIPS_TO_TOUCH = true;
 
@@ -39,5 +48,10 @@ export const PLACEMENT_ORDER: ShipType[] = [
   'frigate',
   'submarine',
 ];
+
+export const TOTAL_FLEET_STRENGTH = PLACEMENT_ORDER.reduce(
+  (sum, type) => sum + SHIP_LENGTHS[type],
+  0,
+);
 
 export const SHIP_PIXEL = 16;

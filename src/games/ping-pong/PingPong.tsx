@@ -39,27 +39,51 @@ export function PingPong() {
           <h1>PING PONG</h1>
 
           <div className="pp-settings-row">
-            <label>
-              Seite
-              <select
-                value={settings.userSide}
-                onChange={(e) => update('userSide', e.target.value as typeof settings.userSide)}
-              >
-                <option value="left">Links</option>
-                <option value="right">Rechts</option>
-              </select>
-            </label>
-            <label>
-              Level
-              <select
-                value={settings.difficulty}
-                onChange={(e) => update('difficulty', e.target.value as typeof settings.difficulty)}
-              >
-                <option value="easy">Einfach</option>
-                <option value="medium">Mittel</option>
-                <option value="hard">Schwer</option>
-              </select>
-            </label>
+            <div className="pp-field">
+              <span>Seite</span>
+              <div className="pp-option-btns">
+                <button
+                  type="button"
+                  className={settings.userSide === 'left' ? 'active' : ''}
+                  onClick={() => update('userSide', 'left')}
+                >
+                  Links
+                </button>
+                <button
+                  type="button"
+                  className={settings.userSide === 'right' ? 'active' : ''}
+                  onClick={() => update('userSide', 'right')}
+                >
+                  Rechts
+                </button>
+              </div>
+            </div>
+            <div className="pp-field">
+              <span>Level</span>
+              <div className="pp-option-btns pp-option-btns--triple">
+                <button
+                  type="button"
+                  className={settings.difficulty === 'easy' ? 'active' : ''}
+                  onClick={() => update('difficulty', 'easy')}
+                >
+                  Einfach
+                </button>
+                <button
+                  type="button"
+                  className={settings.difficulty === 'medium' ? 'active' : ''}
+                  onClick={() => update('difficulty', 'medium')}
+                >
+                  Mittel
+                </button>
+                <button
+                  type="button"
+                  className={settings.difficulty === 'hard' ? 'active' : ''}
+                  onClick={() => update('difficulty', 'hard')}
+                >
+                  Schwer
+                </button>
+              </div>
+            </div>
           </div>
 
           <label className="pp-field">
@@ -75,7 +99,7 @@ export function PingPong() {
 
           <div className="pp-modes">
             <span>Modus</span>
-            <div className="pp-mode-btns">
+            <div className="pp-option-btns">
               <button
                 type="button"
                 className={settings.gameMode === 'standard' ? 'active' : ''}
