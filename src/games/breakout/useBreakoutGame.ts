@@ -237,17 +237,18 @@ export function useBreakoutGame(canvasRef: React.RefObject<HTMLCanvasElement | n
       if (keysRef.current.left || touchButtonsRef.current.left) dx -= PADDLE_SPEED * dt;
       if (keysRef.current.right || touchButtonsRef.current.right) dx += PADDLE_SPEED * dt;
 
+      const pointerX = pointerXRef.current;
       const useMouse =
         mouseControlRef.current &&
-        pointerXRef.current !== null &&
+        pointerX !== null &&
         !touchButtonsRef.current.left &&
         !touchButtonsRef.current.right;
 
-      if (useMouse) {
+      if (useMouse && pointerX !== null) {
         const canvas = canvasRef.current;
         if (canvas) {
           const rect = canvas.getBoundingClientRect();
-          const relative = (pointerXRef.current - rect.left) / rect.width;
+          const relative = (pointerX - rect.left) / rect.width;
           const logicalCenter = relative * CANVAS_WIDTH;
           movePaddle(paddle, logicalCenter - paddle.width / 2);
           return;
