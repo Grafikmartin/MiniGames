@@ -16,7 +16,17 @@ export function Layout({ children, showBack = true }: LayoutProps) {
           Mini Games
         </Link>
       )}
-      {children}
+      <main className="layout-main">{children}</main>
+      <footer className="layout-footer">
+        Eine Seite von{' '}
+        <a
+          href="https://www.onborthmedia.de"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          onborthmedia
+        </a>
+      </footer>
     </div>
   );
 }
