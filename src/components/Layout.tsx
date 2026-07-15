@@ -13,7 +13,7 @@ export function Layout({ children, showBack = true }: LayoutProps) {
       {showBack && (
         <Link to="/" className="layout-back">
           <span className="layout-back-arrow" aria-hidden="true" />
-          Minispiele
+          Mini Games
         </Link>
       )}
       {children}

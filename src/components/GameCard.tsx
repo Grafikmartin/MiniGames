@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { gameSprites } from '../data/gameSprites';
 import type { GameInfo } from '../data/games';
+import { BreakoutCardIcon } from '../games/breakout/BreakoutCardIcon';
 import { BattleshipCardIcon } from '../games/battleship/BattleshipCardIcon';
 import { SnakeCardIcon } from '../games/snake/SnakeCardIcon';
 import { VierGewinntCardIcon } from '../games/vier-gewinnt/VierGewinntCardIcon';
@@ -17,7 +18,11 @@ export function GameCard({ game }: GameCardProps) {
 
   const content = (
     <>
-      {game.id === 'battleship' ? (
+      {game.id === 'breakout' ? (
+        <div className="game-card-icon">
+          <BreakoutCardIcon />
+        </div>
+      ) : game.id === 'battleship' ? (
         <div className="game-card-icon">
           <BattleshipCardIcon />
         </div>

@@ -1,0 +1,276 @@
+.bo-wrapper {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.bo-menu {
+  width: 100%;
+  border: 2px solid #33ff33;
+  background: #111;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.bo-menu-title {
+  font-size: clamp(1rem, 5vw, 18px);
+  color: #33ff33;
+  margin-bottom: 4px;
+}
+
+.bo-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 8px;
+  text-align: left;
+}
+
+.bo-field > span {
+  color: #33ff33;
+}
+
+.bo-option-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.bo-option-btns button {
+  flex: 1;
+  font-family: inherit;
+  font-size: 7px;
+  padding: 8px 4px;
+  min-height: 36px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #555;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bo-option-btns button.active {
+  border-color: #33ff33;
+  background: #33ff33;
+  color: #000;
+}
+
+.bo-mode-desc {
+  font-size: 7px;
+  opacity: 0.7;
+  line-height: 1.6;
+}
+
+.bo-sound {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.bo-sound input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 2px solid #33ff33;
+  background: #000;
+  cursor: pointer;
+  position: relative;
+}
+
+.bo-sound input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #33ff33;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.bo-hi {
+  font-size: 9px;
+}
+
+.bo-btn {
+  font-family: inherit;
+  font-size: 8px;
+  padding: 12px 18px;
+  min-height: 44px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #33ff33;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bo-btn:hover:not(:disabled) {
+  background: #33ff33;
+  color: #000;
+}
+
+.bo-btn:focus-visible {
+  outline: 2px solid #33ff33;
+  outline-offset: 2px;
+}
+
+.bo-btn--primary {
+  margin-top: 4px;
+}
+
+.bo-btn--ghost {
+  border-color: #555;
+}
+
+.bo-btn--small {
+  font-size: 7px;
+  padding: 6px 10px;
+  min-height: 32px;
+}
+
+.bo-back-link {
+  font-size: 8px;
+  color: #33ff33;
+  text-decoration: none;
+  opacity: 0.8;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bo-hud {
+  width: 100%;
+  font-size: 8px;
+  line-height: 1.6;
+  color: #33ff33;
+}
+
+.bo-hud-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bo-hud-row--meta {
+  margin-top: 4px;
+  align-items: center;
+}
+
+.bo-hud-status {
+  margin-top: 6px;
+  font-size: 7px;
+  text-align: center;
+  color: #66ff66;
+  min-height: 1.6em;
+}
+
+.bo-console {
+  position: relative;
+  width: min(100%, calc(100vh - 220px) * 0.8);
+  max-width: 480px;
+  aspect-ratio: 4 / 5;
+  border: 8px solid #555;
+  padding: 4px;
+  background: #111;
+  touch-action: none;
+}
+
+.bo-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  touch-action: none;
+  cursor: none;
+}
+
+.bo-overlay {
+  position: absolute;
+  inset: 4px;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 16px;
+}
+
+.bo-overlay h2 {
+  font-size: 12px;
+  color: #33ff33;
+}
+
+.bo-overlay p {
+  font-size: 8px;
+  line-height: 1.8;
+}
+
+.bo-touch-controls {
+  display: none;
+  width: 100%;
+  gap: 16px;
+  justify-content: center;
+}
+
+.bo-touch-btn {
+  flex: 1;
+  max-width: 160px;
+  min-height: 52px;
+  min-width: 52px;
+  font-family: inherit;
+  font-size: 16px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #555;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bo-touch-btn:active {
+  border-color: #33ff33;
+  background: #0a1a0a;
+}
+
+.bo-launch-btn {
+  width: 100%;
+  max-width: 320px;
+}
+
+.bo-hint {
+  font-size: 7px;
+  color: #1a661a;
+  text-align: center;
+  min-height: 1.6em;
+  width: 100%;
+}
+
+@media (max-width: 720px), (pointer: coarse) {
+  .bo-touch-controls {
+    display: flex;
+  }
+
+  .bo-console {
+    width: min(100%, calc(100vh - 280px) * 0.8);
+  }
+}
+
+@media (max-height: 600px) {
+  .bo-console {
+    width: min(100%, calc(100vh - 200px) * 0.75);
+  }
+}

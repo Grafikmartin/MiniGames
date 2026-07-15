@@ -4,6 +4,7 @@ import { SpaceInvaders } from './games/space-invaders/SpaceInvaders';
 import { Snake } from './games/snake/Snake';
 import { PingPong } from './games/ping-pong/PingPong';
 import { BattleshipGame } from './games/battleship/BattleshipGame';
+import { Breakout } from './games/breakout/Breakout';
 import { VierGewinnt } from './games/vier-gewinnt/VierGewinnt';
 import { HomePage } from './pages/HomePage';
 
@@ -18,6 +19,7 @@ function AppRoutes() {
         <Route path="/vier-gewinnt" element={<VierGewinnt />} />
         <Route path="/ping-pong" element={<PingPong />} />
         <Route path="/schiffe-versenken" element={<BattleshipGame />} />
+        <Route path="/breakout" element={<Breakout />} />
         <Route path="/snake" element={<Snake />} />
       </Routes>
     </Layout>

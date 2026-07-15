@@ -8,9 +8,9 @@ export function HomePage() {
       <header className="home-header">
         <h1 className="home-title">
           <span>MINI</span>
-          <span>SPIELE</span>
+          <span>GAMES</span>
         </h1>
-        <p className="home-subtitle">Retro-Games zum Spielen</p>
+        <p className="home-subtitle">Viel Spaß!</p>
       </header>
 
       <div className="home-grid">

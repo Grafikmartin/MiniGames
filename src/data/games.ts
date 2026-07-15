@@ -38,6 +38,13 @@ export const games: GameInfo[] = [
     status: 'available',
   },
   {
+    id: 'breakout',
+    title: 'Breakout',
+    description: 'Lenke den Ball und zerstöre alle Blöcke.',
+    path: '/breakout',
+    status: 'available',
+  },
+  {
     id: 'snake',
     title: 'Snake',
     description: 'Wachse mit jedem Apfel – aber pass auf die Wände auf.',
