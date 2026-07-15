@@ -1,0 +1,139 @@
+.bs-wrapper {
+  width: 100%;
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bs-ship-info {
+  font-size: 8px;
+  color: #33ff33;
+  text-align: center;
+}
+
+.bs-tabs {
+  display: none;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.bs-tab {
+  font-family: inherit;
+  font-size: 8px;
+  padding: 12px 16px;
+  min-height: 44px;
+  min-width: 44px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #555;
+  cursor: pointer;
+}
+
+.bs-tab--active {
+  border-color: #33ff33;
+  background: #0a1a0a;
+}
+
+.bs-boards {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bs-board-panel {
+  flex: 1;
+  min-width: min(100%, 320px);
+  max-width: 420px;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .bs-board-panel--hidden-mobile {
+    display: none;
+  }
+}
+
+.bs-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.bs-btn {
+  font-family: inherit;
+  font-size: 8px;
+  padding: 12px 18px;
+  min-height: 44px;
+  min-width: 44px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #33ff33;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bs-btn:hover:not(:disabled) {
+  background: #33ff33;
+  color: #000;
+}
+
+.bs-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: #555;
+  color: #555;
+}
+
+.bs-btn--ghost {
+  border-color: #555;
+  opacity: 0.85;
+}
+
+.bs-hint {
+  font-size: 7px;
+  line-height: 1.7;
+  text-align: center;
+  color: #1a661a;
+  max-width: 420px;
+}
+
+.bs-hint--battle {
+  min-height: 1.7em;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .bs-tabs {
+    display: flex;
+  }
+
+  .bs-boards--battle {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bs-boards--battle .bs-board-wrap {
+    width: 100%;
+    max-width: min(100%, calc(10 * 44px + 24px));
+  }
+}
+
+@media (min-width: 721px) {
+  .bs-boards--battle {
+    flex-direction: row;
+  }
+
+  .bs-boards--battle .bs-board-wrap {
+    display: flex;
+  }
+}

@@ -1,0 +1,65 @@
+.bs-board-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.bs-board-label {
+  font-size: 8px;
+  line-height: 1.6;
+  text-align: center;
+  color: #33ff33;
+}
+
+.bs-board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(10, 1fr);
+  gap: 3px;
+  width: min(100%, calc(10 * clamp(24px, min(8vw, 8vh), 42px) + 27px));
+  aspect-ratio: 1;
+  padding: 6px;
+  border: 5px solid #555;
+  background: #123612;
+  box-sizing: border-box;
+}
+
+.bs-board--active {
+  border-color: #33ff33;
+  box-shadow: 0 0 14px rgba(51, 255, 51, 0.35);
+}
+
+.bs-board-cell {
+  position: relative;
+  padding: 0;
+  border: none;
+  background: #000;
+  cursor: pointer;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: 1;
+  touch-action: manipulation;
+  overflow: hidden;
+}
+
+.bs-board-cell:disabled {
+  cursor: default;
+}
+
+.bs-board-cell:focus-visible {
+  outline: 2px solid #33ff33;
+  outline-offset: 1px;
+  z-index: 4;
+}
+
+@media (max-width: 640px) {
+  .bs-board {
+    width: min(100%, calc(10 * clamp(26px, 9vw, 38px) + 27px));
+  }
+
+  .bs-board-cell {
+    min-height: 44px;
+  }
+}

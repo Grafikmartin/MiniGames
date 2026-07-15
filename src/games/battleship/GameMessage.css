@@ -1,0 +1,13 @@
+.bs-message {
+  font-size: 8px;
+  line-height: 1.8;
+  text-align: center;
+  color: #33ff33;
+  min-height: 3.6em;
+  width: 100%;
+  max-width: 420px;
+}
+
+.bs-message-phase {
+  opacity: 0.75;
+}

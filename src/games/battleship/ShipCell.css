@@ -1,0 +1,75 @@
+.bs-cell-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bs-cell {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.bs-cell-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.bs-cell--preview {
+  animation: bs-pulse 0.8s step-end infinite;
+}
+
+.bs-cell--invalid {
+  animation: bs-blink 0.35s step-end infinite;
+  opacity: 0.55;
+}
+
+.bs-cell--selected {
+  outline: 2px solid #33ff33;
+  outline-offset: -2px;
+  z-index: 2;
+}
+
+.bs-cell--cursor {
+  box-shadow: inset 0 0 0 2px #33ff33;
+  z-index: 3;
+}
+
+.bs-cell--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.bs-cell--animating {
+  z-index: 5;
+}
+
+.bs-cell--sunk {
+  opacity: 0.85;
+}
+
+@keyframes bs-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.4); }
+}
+
+@keyframes bs-blink {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bs-cell--preview,
+  .bs-cell--invalid,
+  .bs-cell--animating {
+    animation: none;
+  }
+}

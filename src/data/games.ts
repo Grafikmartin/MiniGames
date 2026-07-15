@@ -31,6 +31,13 @@ export const games: GameInfo[] = [
     status: 'available',
   },
   {
+    id: 'battleship',
+    title: 'Schiffe versenken',
+    description: 'Finde und versenke die versteckte Flotte des Gegners.',
+    path: '/schiffe-versenken',
+    status: 'available',
+  },
+  {
     id: 'snake',
     title: 'Snake',
     description: 'Wachse mit jedem Apfel – aber pass auf die Wände auf.',
