@@ -6,6 +6,7 @@ import {
   getOrthogonalNeighbors,
   getUnshotCells,
   isAlreadyShot,
+  isInBounds,
   parseCoordKey,
 } from './gameLogic';
 import type { Coordinate, HuntState, RadarBoard, ShotResult } from './types';
@@ -19,99 +20,157 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
   return copy;
 }
 
-export function updateHuntState(
-  state: HuntState,
-  results: ShotResult[],
-  radar: RadarBoard,
-): HuntState {
-  let next: HuntState = {
-    mode: state.mode,
-    unsunkHits: [...state.unsunkHits],
-    direction: state.direction,
-    anchor: state.anchor,
-  };
-
-  for (const result of results) {
-    if (result.sunk) {
-      next = createInitialHuntState();
-      continue;
-    }
-    if (result.hit) {
-      next.mode = 'hunt';
-      const key = coordKey(result.coord);
-      if (!next.unsunkHits.some((h) => coordKey(h) === key)) {
-        next.unsunkHits.push(result.coord);
-      }
-      if (!next.anchor) next.anchor = result.coord;
-
-      if (next.unsunkHits.length >= 2 && !next.direction) {
-        const [a, b] = next.unsunkHits;
-        if (a.row === b.row) next.direction = { dr: 0, dc: a.col < b.col ? 1 : -1 };
-        else if (a.col === b.col) next.direction = { dr: a.row < b.row ? 1 : -1, dc: 0 };
-      }
-    }
-  }
-
-  next.unsunkHits = next.unsunkHits.filter((h) => radar[h.row][h.col].shot === 'hit');
-  if (next.unsunkHits.length === 0) {
-    return createInitialHuntState();
-  }
-
-  return next;
+function dedupeCoords(coords: Coordinate[]): Coordinate[] {
+  const unique = new Map<string, Coordinate>();
+  for (const c of coords) unique.set(coordKey(c), c);
+  return [...unique.values()];
 }
 
-function huntTargets(state: HuntState, radar: RadarBoard): Coordinate[] {
-  const candidates: Coordinate[] = [];
-
-  if (state.direction && state.anchor) {
-    const { dr, dc } = state.direction;
-    let steps = 1;
-    while (steps < 10) {
-      const forward = {
-        row: state.anchor.row + dr * steps,
-        col: state.anchor.col + dc * steps,
-      };
-      if (isAlreadyShot(radar, forward)) {
-        if (radar[forward.row]?.[forward.col]?.shot === 'hit') {
-          steps++;
-          continue;
-        }
-        break;
-      }
-      candidates.push(forward);
-      steps++;
-    }
-    steps = 1;
-    while (steps < 10) {
-      const backward = {
-        row: state.anchor.row - dr * steps,
-        col: state.anchor.col - dc * steps,
-      };
-      if (isAlreadyShot(radar, backward)) {
-        if (radar[backward.row]?.[backward.col]?.shot === 'hit') {
-          steps++;
-          continue;
-        }
-        break;
-      }
-      candidates.push(backward);
-      steps++;
+function hitsFromRadar(radar: RadarBoard): Coordinate[] {
+  const hits: Coordinate[] = [];
+  for (let row = 0; row < radar.length; row++) {
+    for (let col = 0; col < radar[row].length; col++) {
+      if (radar[row][col].shot === 'hit') hits.push({ row, col });
     }
   }
+  return hits;
+}
 
-  if (candidates.length === 0 && state.unsunkHits.length > 0) {
-    for (const hit of state.unsunkHits) {
+function syncHuntMeta(hits: Coordinate[]): Pick<HuntState, 'anchor' | 'direction'> {
+  if (hits.length === 0) return { anchor: null, direction: null };
+  if (hits.length === 1) return { anchor: hits[0], direction: null };
+
+  const rows = new Set(hits.map((h) => h.row));
+  const cols = new Set(hits.map((h) => h.col));
+
+  if (rows.size === 1) {
+    const row = hits[0].row;
+    const minCol = Math.min(...hits.map((h) => h.col));
+    return { anchor: { row, col: minCol }, direction: { dr: 0, dc: 1 } };
+  }
+  if (cols.size === 1) {
+    const col = hits[0].col;
+    const minRow = Math.min(...hits.map((h) => h.row));
+    return { anchor: { row: minRow, col }, direction: { dr: 1, dc: 0 } };
+  }
+
+  return { anchor: hits[0], direction: null };
+}
+
+function prioritizeHuntTargets(hits: Coordinate[], candidates: Coordinate[]): Coordinate[] {
+  if (hits.length < 2 || candidates.length <= 1) return candidates;
+
+  const rows = new Set(hits.map((h) => h.row));
+  const cols = new Set(hits.map((h) => h.col));
+
+  if (rows.size === 1) {
+    const row = hits[0].row;
+    const minCol = Math.min(...hits.map((h) => h.col));
+    const maxCol = Math.max(...hits.map((h) => h.col));
+    const gaps = candidates.filter((c) => c.row === row && c.col > minCol && c.col < maxCol);
+    const ends = candidates.filter((c) => c.row === row && (c.col === minCol - 1 || c.col === maxCol + 1));
+    const rest = candidates.filter(
+      (c) => !gaps.some((g) => coordKey(g) === coordKey(c)) && !ends.some((e) => coordKey(e) === coordKey(c)),
+    );
+    return [...gaps, ...ends, ...rest];
+  }
+
+  if (cols.size === 1) {
+    const col = hits[0].col;
+    const minRow = Math.min(...hits.map((h) => h.row));
+    const maxRow = Math.max(...hits.map((h) => h.row));
+    const gaps = candidates.filter((c) => c.col === col && c.row > minRow && c.row < maxRow);
+    const ends = candidates.filter((c) => c.col === col && (c.row === minRow - 1 || c.row === maxRow + 1));
+    const rest = candidates.filter(
+      (c) => !gaps.some((g) => coordKey(g) === coordKey(c)) && !ends.some((e) => coordKey(e) === coordKey(c)),
+    );
+    return [...gaps, ...ends, ...rest];
+  }
+
+  return candidates;
+}
+
+/** Ziele rund um bekannte Treffer: Lücken füllen, Enden der Linie verlängern. */
+export function huntTargets(state: HuntState, radar: RadarBoard): Coordinate[] {
+  const hits = state.unsunkHits;
+  if (hits.length === 0) return [];
+
+  const candidates: Coordinate[] = [];
+  const rows = new Set(hits.map((h) => h.row));
+  const cols = new Set(hits.map((h) => h.col));
+
+  if (rows.size === 1) {
+    const row = hits[0].row;
+    const minCol = Math.min(...hits.map((h) => h.col));
+    const maxCol = Math.max(...hits.map((h) => h.col));
+    for (let col = minCol; col <= maxCol; col++) {
+      const c = { row, col };
+      if (!isAlreadyShot(radar, c)) candidates.push(c);
+    }
+    const left = { row, col: minCol - 1 };
+    const right = { row, col: maxCol + 1 };
+    if (isInBounds(left) && !isAlreadyShot(radar, left)) candidates.push(left);
+    if (isInBounds(right) && !isAlreadyShot(radar, right)) candidates.push(right);
+  } else if (cols.size === 1) {
+    const col = hits[0].col;
+    const minRow = Math.min(...hits.map((h) => h.row));
+    const maxRow = Math.max(...hits.map((h) => h.row));
+    for (let row = minRow; row <= maxRow; row++) {
+      const c = { row, col };
+      if (!isAlreadyShot(radar, c)) candidates.push(c);
+    }
+    const up = { row: minRow - 1, col };
+    const down = { row: maxRow + 1, col };
+    if (isInBounds(up) && !isAlreadyShot(radar, up)) candidates.push(up);
+    if (isInBounds(down) && !isAlreadyShot(radar, down)) candidates.push(down);
+  } else {
+    for (const hit of hits) {
       for (const n of getOrthogonalNeighbors(hit)) {
         if (!isAlreadyShot(radar, n)) candidates.push(n);
       }
     }
   }
 
-  const unique = new Map<string, Coordinate>();
-  for (const c of candidates) {
-    if (!isAlreadyShot(radar, c)) unique.set(coordKey(c), c);
+  return prioritizeHuntTargets(hits, dedupeCoords(candidates));
+}
+
+export function updateHuntState(
+  state: HuntState,
+  results: ShotResult[],
+  radar: RadarBoard,
+): HuntState {
+  let unsunkHits = [...state.unsunkHits];
+
+  for (const result of results) {
+    if (result.hit && !result.sunk) {
+      const key = coordKey(result.coord);
+      if (!unsunkHits.some((h) => coordKey(h) === key)) {
+        unsunkHits.push(result.coord);
+      }
+    }
   }
-  return [...unique.values()];
+
+  unsunkHits = dedupeCoords([...unsunkHits, ...hitsFromRadar(radar)]).filter(
+    (h) => radar[h.row][h.col].shot === 'hit',
+  );
+
+  if (unsunkHits.length === 0) {
+    return createInitialHuntState();
+  }
+
+  const meta = syncHuntMeta(unsunkHits);
+  return {
+    mode: 'hunt',
+    unsunkHits,
+    anchor: meta.anchor,
+    direction: meta.direction,
+  };
+}
+
+function searchTargets(radar: RadarBoard, used: Set<string>): Coordinate[] {
+  const pool = getCheckerboardCandidates(radar).filter((c) => !used.has(coordKey(c)));
+  if (pool.length > 0) return pool;
+  return getUnshotCells(radar).filter((c) => !used.has(coordKey(c)));
 }
 
 export function pickAiShots(
@@ -125,24 +184,25 @@ export function pickAiShots(
   const used = new Set<string>();
 
   for (let i = 0; i < count; i++) {
-    let candidates = huntTargets(currentHunt, radar);
+    const inHunt = currentHunt.mode === 'hunt' && currentHunt.unsunkHits.length > 0;
+    let candidates = inHunt ? huntTargets(currentHunt, radar) : [];
 
-    if (candidates.length === 0) {
-      const pool = getCheckerboardCandidates(radar).filter((c) => !used.has(coordKey(c)));
-      if (pool.length === 0) {
-        const fallback = getUnshotCells(radar).filter((c) => !used.has(coordKey(c)));
-        if (fallback.length === 0) break;
-        candidates = fallback;
-      } else {
-        candidates = pool;
-      }
+    if (candidates.length === 0 && !inHunt) {
+      candidates = searchTargets(radar, used);
+    }
+
+    if (candidates.length === 0 && inHunt) {
+      currentHunt = createInitialHuntState();
+      candidates = searchTargets(radar, used);
     }
 
     candidates = candidates.filter((c) => !used.has(coordKey(c)));
     if (candidates.length === 0) break;
 
-    const ordered = shuffle(candidates, rng);
-    const pick = ordered[0];
+    const pick =
+      inHunt && currentHunt.unsunkHits.length >= 2
+        ? candidates[0]
+        : shuffle(candidates, rng)[0];
     shots.push(pick);
     used.add(coordKey(pick));
   }

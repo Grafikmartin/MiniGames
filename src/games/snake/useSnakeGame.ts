@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import bissSound from '../../assets/biss.mp3';
-import endeSound from '../../assets/ende.mp3';
 import {
   CANVAS_MAX_HEIGHT,
   COLORS,
@@ -8,6 +6,7 @@ import {
   MIN_SWIPE_DISTANCE,
   STORAGE_KEY,
 } from './constants';
+import { snakeSound, unlockAudio } from './sound';
 import type { GamePhase, Point, Velocity } from './types';
 
 function isTouchDevice() {
@@ -61,9 +60,6 @@ export function useSnakeGame(
   const touchStartRef = useRef({ x: 0, y: 0 });
   const gameSpeedRef = useRef(isTouchDevice() ? 300 : 200);
   const readyRef = useRef(false);
-
-  const eatSoundRef = useRef<HTMLAudioElement | null>(null);
-  const endSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const [score, setScore] = useState(0);
   const [highscore, setHighscore] = useState(0);
@@ -195,35 +191,18 @@ export function useSnakeGame(
 
   const enableAudio = useCallback(() => {
     if (audioEnabledRef.current) return;
-    const unlockSounds = [eatSoundRef.current].filter(Boolean);
-    if (unlockSounds.length === 0) return;
-
-    Promise.all(
-      unlockSounds.map((sound) =>
-        sound!.play().then(() => {
-          sound!.pause();
-          sound!.currentTime = 0;
-        }).catch(() => {}),
-      ),
-    ).finally(() => {
-      audioEnabledRef.current = true;
-    });
+    unlockAudio();
+    audioEnabledRef.current = true;
   }, []);
 
   const playEatSound = useCallback(() => {
-    if (!audioEnabledRef.current || !eatSoundRef.current) return;
-    const s = eatSoundRef.current;
-    s.currentTime = 0;
-    s.volume = 0.5;
-    s.play().catch(() => {});
+    if (!audioEnabledRef.current) return;
+    snakeSound.eat();
   }, []);
 
   const playEndSound = useCallback(() => {
-    if (!audioEnabledRef.current || !endSoundRef.current) return;
-    const s = endSoundRef.current;
-    s.currentTime = 0;
-    s.volume = 0.6;
-    s.play().catch(() => {});
+    if (!audioEnabledRef.current) return;
+    snakeSound.gameOver();
   }, []);
 
   const placeFood = useCallback(() => {
@@ -418,9 +397,6 @@ export function useSnakeGame(
   useEffect(() => {
     highscoreRef.current = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
     setHighscore(highscoreRef.current);
-
-    eatSoundRef.current = new Audio(bissSound);
-    endSoundRef.current = new Audio(endeSound);
 
     const setup = () => {
       if (!resizeCanvas()) {

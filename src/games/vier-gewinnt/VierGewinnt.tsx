@@ -1,7 +1,4 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import circleSound from '../../assets/circle.mp3';
-import crossSound from '../../assets/cross.mp3';
-import winSound from '../../assets/richtig.mp3';
 import {
   checkWin,
   createEmptyBoard,
@@ -11,6 +8,7 @@ import {
   type Board,
   type Mark,
 } from './gameLogic';
+import { vgSound, unlockAudio } from './sound';
 import { PlayerMark } from './PlayerMark';
 import { PixelSprite } from '../../components/PixelSprite';
 import { LEGEND_PIXEL, markSprites, STATUS_PIXEL } from './markSprites';
@@ -83,9 +81,6 @@ export function VierGewinnt() {
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
 
   const boardRef = useRef(board);
-  const circleRef = useRef<HTMLAudioElement | null>(null);
-  const crossRef = useRef<HTMLAudioElement | null>(null);
-  const winRef = useRef<HTMLAudioElement | null>(null);
   const computerTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const turnIdRef = useRef(0);
 
@@ -94,14 +89,14 @@ export function VierGewinnt() {
   }, [board]);
 
   const playDropSound = useCallback((mark: Mark) => {
-    const audio = mark === 'player' ? circleRef.current : crossRef.current;
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
+    unlockAudio();
+    if (mark === 'player') vgSound.playerDrop();
+    else vgSound.computerDrop();
   }, []);
 
   const playWinSound = useCallback(() => {
-    winRef.current?.play().catch(() => {});
+    unlockAudio();
+    vgSound.win();
   }, []);
 
   const finishMove = useCallback((result: MoveResult, mark: Mark) => {
@@ -212,10 +207,6 @@ export function VierGewinnt() {
   }, []);
 
   useEffect(() => {
-    circleRef.current = new Audio(circleSound);
-    crossRef.current = new Audio(crossSound);
-    winRef.current = new Audio(winSound);
-
     const onFs = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', onFs);
 

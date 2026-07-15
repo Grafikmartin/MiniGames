@@ -122,6 +122,45 @@ describe('KI', () => {
     const hunt = updateHuntState(createInitialHuntState(), [{ coord: { row: 3, col: 3 }, hit: true, sunk: false, shipId: 'x' }], radar);
     expect(hunt.mode).toBe('hunt');
   });
+
+  it('schießt nach Treffer auf benachbarte Felder', () => {
+    const radar = createEmptyRadar();
+    radar[3][3].shot = 'hit';
+    const hunt = updateHuntState(createInitialHuntState(), [{ coord: { row: 3, col: 3 }, hit: true, sunk: false, shipId: 'x' }], radar);
+    const { shots } = pickAiShots(radar, hunt, 1, () => 0);
+    expect(shots).toHaveLength(1);
+    const s = shots[0];
+    const adjacent =
+      (Math.abs(s.row - 3) === 1 && s.col === 3) || (Math.abs(s.col - 3) === 1 && s.row === 3);
+    expect(adjacent).toBe(true);
+  });
+
+  it('vervollständigt eine Schiffslinie zwischen zwei Treffern', () => {
+    const radar = createEmptyRadar();
+    radar[3][3].shot = 'hit';
+    radar[3][5].shot = 'hit';
+    const hunt = updateHuntState(createInitialHuntState(), [], radar);
+    const { shots } = pickAiShots(radar, hunt, 1, () => 0);
+    expect(shots[0]).toEqual({ row: 3, col: 4 });
+  });
+
+  it('behält Jagdmodus nach versenktem Schiff wenn andere Treffer offen sind', () => {
+    const radar = createEmptyRadar();
+    radar[8][8].shot = 'hit';
+    radar[3][3].shot = 'sunk';
+    let hunt = updateHuntState(
+      createInitialHuntState(),
+      [{ coord: { row: 3, col: 3 }, hit: true, sunk: true, shipId: 'a' }],
+      radar,
+    );
+    expect(hunt.mode).toBe('hunt');
+    expect(hunt.unsunkHits).toEqual([{ row: 8, col: 8 }]);
+    const { shots } = pickAiShots(radar, hunt, 1, () => 0);
+    const s = shots[0];
+    const adjacent =
+      (Math.abs(s.row - 8) === 1 && s.col === 8) || (Math.abs(s.col - 8) === 1 && s.row === 8);
+    expect(adjacent).toBe(true);
+  });
 });
 
 describe('Flottengrößen', () => {

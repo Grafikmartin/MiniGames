@@ -1,48 +1,10 @@
-/** Leichtgewichtige Retro-Sounds per Web Audio – ohne MP3-Assets. */
+import { beep, beepSequence } from '../../lib/retroSound';
 
-let ctx: AudioContext | null = null;
-let enabled = true;
-
-function getCtx(): AudioContext | null {
-  if (!enabled) return null;
-  if (!ctx) {
-    try {
-      ctx = new AudioContext();
-    } catch {
-      return null;
-    }
-  }
-  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-  return ctx;
-}
-
-function beep(freq: number, duration: number, type: OscillatorType = 'square', gain = 0.08) {
-  const audio = getCtx();
-  if (!audio) return;
-  const osc = audio.createOscillator();
-  const g = audio.createGain();
-  osc.type = type;
-  osc.frequency.value = freq;
-  g.gain.value = gain;
-  osc.connect(g);
-  g.connect(audio.destination);
-  const t = audio.currentTime;
-  g.gain.exponentialRampToValueAtTime(0.001, t + duration);
-  osc.start(t);
-  osc.stop(t + duration);
-}
-
-export function setSoundEnabled(on: boolean) {
-  enabled = on;
-}
-
-export function isSoundEnabled() {
-  return enabled;
-}
-
-export function unlockAudio() {
-  getCtx();
-}
+export {
+  unlockAudio,
+  setRetroSoundEnabled as setSoundEnabled,
+  isRetroSoundEnabled as isSoundEnabled,
+} from '../../lib/retroSound';
 
 export const bsSound = {
   tick: () => beep(880, 0.025, 'square', 0.04),
@@ -58,12 +20,27 @@ export const bsSound = {
     setTimeout(() => beep(880, 0.06, 'square', 0.08), 50);
   },
   sunk: () => {
-    [520, 420, 320, 220].forEach((f, i) => setTimeout(() => beep(f, 0.07, 'square', 0.07), i * 70));
+    beepSequence([
+      { freq: 520, duration: 0.07, gain: 0.07 },
+      { freq: 420, duration: 0.07, delay: 0.07, gain: 0.07 },
+      { freq: 320, duration: 0.07, delay: 0.07, gain: 0.07 },
+      { freq: 220, duration: 0.07, delay: 0.07, gain: 0.07 },
+    ]);
   },
   victory: () => {
-    [440, 554, 659, 880].forEach((f, i) => setTimeout(() => beep(f, 0.12, 'square', 0.08), i * 100));
+    beepSequence([
+      { freq: 440, duration: 0.12, gain: 0.08 },
+      { freq: 554, duration: 0.12, delay: 0.1, gain: 0.08 },
+      { freq: 659, duration: 0.12, delay: 0.1, gain: 0.08 },
+      { freq: 880, duration: 0.12, delay: 0.1, gain: 0.08 },
+    ]);
   },
   defeat: () => {
-    [330, 260, 196, 130].forEach((f, i) => setTimeout(() => beep(f, 0.14, 'square', 0.07), i * 120));
+    beepSequence([
+      { freq: 330, duration: 0.14, gain: 0.07 },
+      { freq: 260, duration: 0.14, delay: 0.12, gain: 0.07 },
+      { freq: 196, duration: 0.14, delay: 0.12, gain: 0.07 },
+      { freq: 130, duration: 0.14, delay: 0.12, gain: 0.07 },
+    ]);
   },
 };

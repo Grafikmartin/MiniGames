@@ -24,6 +24,7 @@ import {
   PLAYER_WIDTH,
   STORAGE_KEY,
 } from './constants';
+import { setSfxEnabled, siSound, setSiMusicPlaying, stopSiMusic, unlockAudio } from './sound';
 import type { EnemyGroup, GameState, OverlayState } from './types';
 
 const rectIntersect = (
@@ -71,8 +72,6 @@ export function useSpaceInvadersGame(canvasRef: React.RefObject<HTMLCanvasElemen
   const rafRef = useRef<number>(0);
   const enemyFireTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const waveTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
 
   const [overlay, setOverlay] = useState<OverlayState>('start');
   const [waveMsg, setWaveMsg] = useState('WAVE 1');
@@ -145,13 +144,15 @@ export function useSpaceInvadersGame(canvasRef: React.RefObject<HTMLCanvasElemen
 
   const playLaserPlayer = useCallback(() => {
     if (stateRef.current.soundEnabled) {
-      new Audio('/assets/laser.mp3').play();
+      unlockAudio();
+      siSound.playerLaser();
     }
   }, []);
 
   const playLaserAlien = useCallback(() => {
     if (stateRef.current.soundEnabled) {
-      new Audio('/assets/laser-alien.mp3').play();
+      unlockAudio();
+      siSound.alienLaser();
     }
   }, []);
 
@@ -272,8 +273,8 @@ export function useSpaceInvadersGame(canvasRef: React.RefObject<HTMLCanvasElemen
     loadHighscore();
     const hs = stateRef.current.highscore;
     stateRef.current = createInitialState(hs);
-    if (musicPlaying && bgMusicRef.current) {
-      bgMusicRef.current.play().catch(() => {});
+    if (musicPlaying) {
+      setSiMusicPlaying(true);
     }
     spawnWave();
     syncUI(stateRef.current);
@@ -299,19 +300,15 @@ export function useSpaceInvadersGame(canvasRef: React.RefObject<HTMLCanvasElemen
     const s = stateRef.current;
     s.soundEnabled = !s.soundEnabled;
     setSoundEnabled(s.soundEnabled);
+    setSfxEnabled(s.soundEnabled);
   }, []);
 
   const toggleMusic = useCallback(() => {
-    const music = bgMusicRef.current;
-    if (!music) return;
     const s = stateRef.current;
     s.musicPlaying = !s.musicPlaying;
     setMusicPlaying(s.musicPlaying);
-    if (s.musicPlaying) {
-      music.play().catch(() => {});
-    } else {
-      music.pause();
-    }
+    unlockAudio();
+    setSiMusicPlaying(s.musicPlaying);
   }, []);
 
   const enterFullscreen = useCallback(() => {
@@ -332,13 +329,10 @@ export function useSpaceInvadersGame(canvasRef: React.RefObject<HTMLCanvasElemen
   }, [fireBullet]);
 
   useEffect(() => {
-    bgMusicRef.current = new Audio('/assets/8-bit.mp3');
-    bgMusicRef.current.loop = true;
-    bgMusicRef.current.volume = 0.4;
     loadHighscore();
 
     return () => {
-      bgMusicRef.current?.pause();
+      stopSiMusic();
       cancelAnimationFrame(rafRef.current);
       clearTimeout(enemyFireTimeoutRef.current);
       clearTimeout(waveTimeoutRef.current);

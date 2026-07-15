@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import pingSound from '../../assets/ping.mp3';
 import {
   BALL_SIZE,
   CANVAS_HEIGHT,
@@ -15,6 +14,7 @@ import {
   type GameMode,
   type GameSettings,
 } from './constants';
+import { playPaddleHit, unlockAudio } from './sound';
 import type { Ball, EndInfo, Paddle, Screen } from './types';
 
 function createPaddle(x: number): Paddle {
@@ -42,6 +42,46 @@ function addSpin(ball: Ball, paddle: Paddle) {
   const paddleCenter = paddle.y + paddle.height / 2;
   const ballCenter = ball.y + ball.height / 2;
   ball.dy += (ballCenter - paddleCenter) * 0.1;
+}
+
+/** Verhindert fast horizontale oder zu steile Bahnen (Ball klebt an der Decke/Boden). */
+function stabilizeBallVelocity(ball: Ball) {
+  const speed = Math.hypot(ball.dx, ball.dy);
+  if (speed < 0.001) {
+    ball.dx = 5;
+    ball.dy = 3;
+    return;
+  }
+
+  const minDy = speed * 0.25;
+  const maxDy = speed * 0.85;
+
+  if (Math.abs(ball.dy) < minDy) {
+    ball.dy = (ball.dy === 0 ? 1 : Math.sign(ball.dy)) * minDy;
+  } else if (Math.abs(ball.dy) > maxDy) {
+    ball.dy = Math.sign(ball.dy) * maxDy;
+  }
+
+  const dxMag = Math.sqrt(Math.max(0, speed * speed - ball.dy * ball.dy));
+  ball.dx = Math.sign(ball.dx || 1) * dxMag;
+}
+
+function bounceOffWall(ball: Ball) {
+  if (ball.y < 0) {
+    ball.y = 0;
+    ball.dy = Math.abs(ball.dy) || 1;
+  } else if (ball.y + ball.height > CANVAS_HEIGHT) {
+    ball.y = CANVAS_HEIGHT - ball.height;
+    ball.dy = -Math.abs(ball.dy) || -1;
+  }
+  stabilizeBallVelocity(ball);
+}
+
+function resolvePaddleHit(ball: Ball, paddle: Paddle, towardRight: boolean) {
+  ball.dx = towardRight ? Math.abs(ball.dx) : -Math.abs(ball.dx);
+  addSpin(ball, paddle);
+  stabilizeBallVelocity(ball);
+  ball.x = towardRight ? paddle.x + paddle.width : paddle.x - ball.width;
 }
 
 function loadSettings(): GameSettings {
@@ -80,7 +120,6 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
   const gameStartRef = useRef(0);
   const lastSpeedIncRef = useRef(0);
   const flashRef = useRef({ x: null as number | null, y: null as number | null, timer: 0 });
-  const pingRef = useRef<HTMLAudioElement | null>(null);
 
   const [screen, setScreen] = useState<Screen>('menu');
   const [settings, setSettings] = useState<GameSettings>(loadSettings);
@@ -114,11 +153,10 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     setSurvivalHi(parseInt(localStorage.getItem(STORAGE_SURVIVAL_HI) || '0', 10));
   }, []);
 
-  const playPing = useCallback(() => {
-    if (!settingsRef.current.soundOn || !pingRef.current) return;
-    const s = pingRef.current;
-    s.currentTime = 0;
-    s.play().catch(() => {});
+  const playPing = useCallback((ballYNorm = 0.5) => {
+    if (!settingsRef.current.soundOn) return;
+    unlockAudio();
+    playPaddleHit(ballYNorm);
   }, []);
 
   const getCtx = useCallback(() => canvasRef.current?.getContext('2d') ?? null, [canvasRef]);
@@ -194,6 +232,7 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
       if (elapsed >= 60) {
         ball.dx *= 1.2;
         ball.dy *= 1.2;
+        stabilizeBallVelocity(ball);
         lastSpeedIncRef.current = timestamp;
       }
     }
@@ -235,19 +274,17 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     ball.y += ball.dy;
 
     if (ball.y < 0 || ball.y + ball.height > CANVAS_HEIGHT) {
-      ball.dy *= -1;
-      playPing();
+      bounceOffWall(ball);
+      playPing(ball.y / CANVAS_HEIGHT);
     }
 
     if (collides(ball, userPaddle)) {
-      ball.dx = s.userSide === 'left' ? Math.abs(ball.dx) : -Math.abs(ball.dx);
-      addSpin(ball, userPaddle);
-      playPing();
+      resolvePaddleHit(ball, userPaddle, settingsRef.current.userSide === 'left');
+      playPing(ball.y / CANVAS_HEIGHT);
     }
     if (collides(ball, aiPaddle)) {
-      ball.dx = s.userSide === 'left' ? -Math.abs(ball.dx) : Math.abs(ball.dx);
-      addSpin(ball, aiPaddle);
-      playPing();
+      resolvePaddleHit(ball, aiPaddle, settingsRef.current.userSide !== 'left');
+      playPing(ball.y / CANVAS_HEIGHT);
     }
 
     const markFlash = (side: 'left' | 'right') => {
@@ -412,7 +449,6 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
   }, [canvasRef]);
 
   useEffect(() => {
-    pingRef.current = new Audio(pingSound);
     updateHighscores();
 
     const onKeyDown = (e: KeyboardEvent) => {
