@@ -6,6 +6,15 @@
   align-items: center;
   gap: 12px;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  --bs-ui-chrome: 380px;
+}
+
+.bs-wrapper:has(.bs-fleet) {
+  --bs-ui-chrome: 420px;
+}
+
+.bs-wrapper:has(.bs-tabs) {
+  --bs-ui-chrome: 440px;
 }
 
 .bs-ship-info {
@@ -113,6 +122,10 @@
 }
 
 @media (max-width: 720px) {
+  .bs-wrapper {
+    gap: 8px;
+  }
+
   .bs-tabs {
     display: flex;
   }
@@ -124,7 +137,34 @@
 
   .bs-boards--battle .bs-board-wrap {
     width: 100%;
-    max-width: min(100%, calc(10 * 44px + 24px));
+  }
+
+  .bs-boards--battle .bs-board-label {
+    display: none;
+  }
+
+  .bs-message {
+    min-height: 2.6em;
+    font-size: 7px;
+  }
+
+  .bs-fleet {
+    gap: 4px;
+    font-size: 7px;
+  }
+
+  .bs-fleet-shots {
+    font-size: 8px;
+  }
+
+  .bs-hint {
+    font-size: 6px;
+  }
+
+  .bs-btn {
+    font-size: 7px;
+    padding: 10px 12px;
+    min-height: 40px;
   }
 }
 
