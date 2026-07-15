@@ -13,11 +13,11 @@ export function BreakoutCardIcon() {
         <PixelSprite sprite={[...BRICK]} pixelSize={2} />
         <PixelSprite sprite={[...BRICK]} pixelSize={2} />
       </div>
-      <div className="breakout-card-icon__paddle">
-        <PixelSprite sprite={[...PADDLE]} pixelSize={2} />
-      </div>
       <div className="breakout-card-icon__ball">
         <PixelSprite sprite={[...BALL]} pixelSize={2} />
+      </div>
+      <div className="breakout-card-icon__paddle">
+        <PixelSprite sprite={[...PADDLE]} pixelSize={2} />
       </div>
     </div>
   );
