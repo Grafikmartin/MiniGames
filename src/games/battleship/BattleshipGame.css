@@ -6,15 +6,23 @@
   align-items: center;
   gap: 12px;
   padding-bottom: env(safe-area-inset-bottom, 0);
-  --bs-ui-chrome: 200px;
+  --bs-ui-chrome: 230px;
+}
+
+.bs-top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 28px;
 }
 
 .bs-wrapper:has(.bs-fleet) {
-  --bs-ui-chrome: 220px;
+  --bs-ui-chrome: 250px;
 }
 
 .bs-wrapper:has(.bs-tabs) {
-  --bs-ui-chrome: 240px;
+  --bs-ui-chrome: 270px;
 }
 
 .bs-ship-info {

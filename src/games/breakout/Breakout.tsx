@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { FullscreenButton } from '../../components/FullscreenButton';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants';
 import { BreakoutControls } from './BreakoutControls';
 import { BreakoutHelp } from './BreakoutHelp';
@@ -40,6 +41,10 @@ export function Breakout() {
 
   return (
     <div className="bo-wrapper">
+      <div className="bo-top-bar">
+        <FullscreenButton />
+      </div>
+
       {phase === 'menu' && (
         <BreakoutMenu
           settings={settings}

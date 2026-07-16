@@ -8,6 +8,14 @@
   padding-bottom: max(12px, env(safe-area-inset-bottom));
 }
 
+.bo-top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 28px;
+}
+
 .bo-menu {
   width: 100%;
   border: 2px solid #33ff33;

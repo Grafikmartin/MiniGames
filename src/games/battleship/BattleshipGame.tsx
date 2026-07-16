@@ -1,3 +1,4 @@
+import { FullscreenButton } from '../../components/FullscreenButton';
 import { BattleshipBoard } from './BattleshipBoard';
 import { FleetStatus } from './FleetStatus';
 import { GameHelp } from './GameHelp';
@@ -33,6 +34,10 @@ export function BattleshipGame() {
 
   return (
     <div className="bs-wrapper">
+      <div className="bs-top-bar">
+        <FullscreenButton />
+      </div>
+
       <GameMessageBar message={state.message} phase={state.phase} />
 
       {isModeSelect && (
