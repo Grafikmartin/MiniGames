@@ -31,6 +31,31 @@
     padding-top: 8px;
     font-size: 8px;
   }
+
+  /* Spiele: alles ohne Scrollen auf dem Handy */
+  .layout--game {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    padding-top: 6px;
+    padding-bottom: max(4px, env(safe-area-inset-bottom));
+  }
+
+  .layout--game .layout-back {
+    margin-bottom: 6px;
+    flex-shrink: 0;
+  }
+
+  .layout--game .layout-main {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+  }
+
+  .layout--game .layout-footer {
+    display: none;
+  }
 }
 
 .layout-back {

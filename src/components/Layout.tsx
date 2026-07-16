@@ -9,7 +9,7 @@ interface LayoutProps {
 
 export function Layout({ children, showBack = true }: LayoutProps) {
   return (
-    <div className="layout">
+    <div className={`layout${showBack ? ' layout--game' : ''}`}>
       {showBack && (
         <Link to="/" className="layout-back">
           <span className="layout-back-arrow" aria-hidden="true" />

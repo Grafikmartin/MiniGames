@@ -83,18 +83,57 @@ export function useSnakeGame(
     const container = consoleRef.current;
     if (!canvas || !container) return false;
 
-    const containerWidth = Math.max(container.clientWidth - 16, GRID_SIZE * 10);
-    const containerHeight = Math.max(
-      Math.min(CANVAS_MAX_HEIGHT, window.innerHeight * 0.5),
+    const viewportH = window.visualViewport?.height ?? window.innerHeight;
+    const wrapper = container.parentElement;
+    let reservedOutsideConsole = 0;
+
+    if (wrapper) {
+      for (const child of Array.from(wrapper.children)) {
+        if (child === container) continue;
+        const el = child as HTMLElement;
+        if (getComputedStyle(el).display === 'none') continue;
+        const style = getComputedStyle(el);
+        reservedOutsideConsole +=
+          el.offsetHeight +
+          parseFloat(style.marginTop || '0') +
+          parseFloat(style.marginBottom || '0');
+      }
+    }
+
+    const wrapperTop = wrapper?.getBoundingClientRect().top ?? 0;
+    const consoleStyle = getComputedStyle(container);
+    const consoleChrome =
+      parseFloat(consoleStyle.paddingTop || '0') +
+      parseFloat(consoleStyle.paddingBottom || '0') +
+      parseFloat(consoleStyle.borderTopWidth || '0') +
+      parseFloat(consoleStyle.borderBottomWidth || '0');
+
+    const availableForCanvas = Math.max(
+      viewportH - wrapperTop - reservedOutsideConsole - consoleChrome - 4,
       GRID_SIZE * 10,
     );
 
-    const tileCountX = Math.max(Math.floor(containerWidth / GRID_SIZE), 10);
-    const tileCountY = Math.max(Math.floor(containerHeight / GRID_SIZE), 10);
+    const contentWidth = Math.max(
+      container.clientWidth -
+        parseFloat(consoleStyle.paddingLeft || '0') -
+        parseFloat(consoleStyle.paddingRight || '0'),
+      GRID_SIZE * 10,
+    );
+    const contentHeight = Math.max(
+      Math.min(CANVAS_MAX_HEIGHT, availableForCanvas),
+      GRID_SIZE * 10,
+    );
+
+    const tileCountX = Math.max(Math.floor(contentWidth / GRID_SIZE), 10);
+    const tileCountY = Math.max(Math.floor(contentHeight / GRID_SIZE), 10);
 
     tileCountRef.current = { x: tileCountX, y: tileCountY };
     canvas.width = tileCountX * GRID_SIZE;
     canvas.height = tileCountY * GRID_SIZE;
+
+    const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height, 1);
+    canvas.style.width = `${Math.floor(canvas.width * scale)}px`;
+    canvas.style.height = `${Math.floor(canvas.height * scale)}px`;
     return true;
   }, [canvasRef, consoleRef]);
 
@@ -417,6 +456,7 @@ export function useSnakeGame(
     };
 
     window.addEventListener('resize', onResize);
+    window.visualViewport?.addEventListener('resize', onResize);
     window.addEventListener('keydown', onKeyDown);
     document.addEventListener('fullscreenchange', onFsChange);
 
@@ -424,6 +464,7 @@ export function useSnakeGame(
       readyRef.current = false;
       stopLoop();
       window.removeEventListener('resize', onResize);
+      window.visualViewport?.removeEventListener('resize', onResize);
       window.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('fullscreenchange', onFsChange);
     };
