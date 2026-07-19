@@ -4,6 +4,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .bs-board-label {
@@ -11,6 +12,8 @@
   line-height: 1.6;
   text-align: center;
   color: #33ff33;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
 .bs-board {
@@ -19,7 +22,8 @@
   grid-template-rows: repeat(10, 1fr);
   gap: 2px;
   width: min(100%, 420px);
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1;
+  height: auto;
   padding: 4px;
   border: 3px solid #555;
   background: #123612;
@@ -28,7 +32,7 @@
 
 .bs-board--active {
   border-color: #33ff33;
-  box-shadow: 0 0 14px rgba(51, 255, 51, 0.35);
+  box-shadow: 0 0 10px rgba(51, 255, 51, 0.3);
 }
 
 .bs-board-cell {
@@ -55,22 +59,21 @@
 }
 
 @media (max-width: 720px), (max-height: 720px) {
-  .bs-board-wrap {
-    width: 100%;
-    padding: 0 2px;
-    box-sizing: border-box;
-  }
-
   .bs-board {
+    /* Breite der Container-Innenfläche, begrenzt durch verfügbare Höhe */
     width: min(
       100%,
-      calc(
-        100dvh - var(--bs-ui-chrome, 200px) - env(safe-area-inset-bottom, 0px)
-      ),
+      calc(100dvh - var(--bs-ui-chrome, 280px) - env(safe-area-inset-bottom, 0px)),
       420px
     );
+    max-width: 100%;
     gap: 1px;
-    padding: 2px;
-    border-width: 2px;
+    padding: 3px;
+    border-width: 3px;
+    box-shadow: none;
+  }
+
+  .bs-board--active {
+    box-shadow: none;
   }
 }
