@@ -438,10 +438,8 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     saveSettings({ ...settingsRef.current, gameMode: mode });
   }, [saveSettings]);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    e.preventDefault();
-    // Absichtliche No-Op: Steuerung läuft über die Tasten unter dem Spielfeld,
-    // damit der Finger die eigene Kelle nicht verdeckt.
+  const handleTouchMove = useCallback((_e: React.TouchEvent) => {
+    // Absichtliche No-Op: Portrait nutzt HOCH/RUNTER, Landscape die Seitenstreifen.
   }, []);
 
   const setPaddleDir = useCallback((dir: 'up' | 'down' | null) => {
@@ -452,6 +450,14 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     if (dir === 'up') userPaddleRef.current.dy = -paddleSpeedRef.current;
     else if (dir === 'down') userPaddleRef.current.dy = paddleSpeedRef.current;
     else userPaddleRef.current.dy = 0;
+  }, []);
+
+  /** Absolute Kellenhöhe aus der Y-Position in einer Touch-Zone (0–1). */
+  const setPaddleFromRatio = useCallback((ratio: number) => {
+    if (!runningRef.current || pausedRef.current) return;
+    const t = Math.max(0, Math.min(1, ratio));
+    userPaddleRef.current.dy = 0;
+    userPaddleRef.current.y = t * (CANVAS_HEIGHT - PADDLE_HEIGHT);
   }, []);
 
   useEffect(() => {
@@ -514,6 +520,7 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     backToMenu,
     handleTouchMove,
     setPaddleDir,
+    setPaddleFromRatio,
     enterFullscreen,
     exitFullscreen,
   };

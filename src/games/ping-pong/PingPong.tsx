@@ -1,10 +1,83 @@
-import { useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from './constants';
 import { usePingPongGame } from './usePingPongGame';
 import './PingPong.css';
 
+function SideZone({
+  label,
+  onMove,
+}: {
+  label: string;
+  onMove: (ratio: number) => void;
+}) {
+  const zoneRef = useRef<HTMLDivElement>(null);
+
+  const handlePointer = (clientX: number, clientY: number) => {
+    const el = zoneRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
+
+    // Nach CSS-Drehung ist der Streifen oft breiter als hoch → X-Achse nutzen
+    if (rect.width >= rect.height) {
+      onMove((clientX - rect.left) / rect.width);
+    } else {
+      onMove((clientY - rect.top) / rect.height);
+    }
+  };
+
+  return (
+    <div
+      ref={zoneRef}
+      className="pp-side-zone"
+      role="slider"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      tabIndex={0}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        handlePointer(e.clientX, e.clientY);
+      }}
+      onPointerMove={(e) => {
+        if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+        e.preventDefault();
+        handlePointer(e.clientX, e.clientY);
+      }}
+    >
+      <span className="pp-side-zone-mark" aria-hidden>
+        ║
+      </span>
+    </div>
+  );
+}
+
+function unlockOrientation() {
+  try {
+    const orientation = window.screen.orientation as ScreenOrientation & {
+      unlock?: () => void;
+    };
+    orientation.unlock?.();
+  } catch {
+    /* ignore */
+  }
+}
+
+async function lockLandscape() {
+  try {
+    const orientation = window.screen.orientation as ScreenOrientation & {
+      lock?: (orientation: string) => Promise<void>;
+    };
+    await orientation.lock?.('landscape');
+  } catch {
+    /* viele Browser (v. a. iOS) erlauben kein Lock */
+  }
+}
+
 export function PingPong() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [rotated, setRotated] = useState(false);
   const {
     screen,
     settings,
@@ -25,6 +98,7 @@ export function PingPong() {
     backToMenu,
     handleTouchMove,
     setPaddleDir,
+    setPaddleFromRatio,
     enterFullscreen,
     exitFullscreen,
   } = usePingPongGame(canvasRef);
@@ -33,8 +107,27 @@ export function PingPong() {
     saveSettings({ ...settings, [key]: value });
   };
 
+  const toggleRotate = useCallback(() => {
+    setRotated((prev) => {
+      const next = !prev;
+      if (next) void lockLandscape();
+      else unlockOrientation();
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (screen === 'menu') {
+      setRotated(false);
+      unlockOrientation();
+    }
+  }, [screen]);
+
+  const showSideZones = rotated && screen === 'playing' && !paused;
+  const showTouchButtons = !rotated && screen === 'playing' && !paused;
+
   return (
-    <div className="pp-wrapper">
+    <div className={`pp-wrapper${rotated ? ' pp-wrapper--rotated' : ''}`}>
       {screen === 'menu' && (
         <div className="pp-menu">
           <h1>PING PONG</h1>
@@ -136,9 +229,7 @@ export function PingPong() {
             START
           </button>
 
-          <p className="pp-hi">
-            HI: {highscoreLabel}
-          </p>
+          <p className="pp-hi">HI: {highscoreLabel}</p>
           <p className="pp-hi-desc">
             {settings.gameMode === 'standard' ? 'Höchste Punktzahl' : 'Längste Zeit'}
           </p>
@@ -149,13 +240,24 @@ export function PingPong() {
         <>
           <div className="pp-header">
             {settings.gameMode === 'standard' ? (
-              <span>DU {userScore} : {aiScore} PC</span>
+              <span>
+                DU {userScore} : {aiScore} PC
+              </span>
             ) : (
-              <span>LEBEN: {3 - lives}/3 · {survivalTime} · {speedLabel}</span>
+              <span>
+                LEBEN: {3 - lives}/3 · {survivalTime} · {speedLabel}
+              </span>
             )}
             <div className="pp-controls">
               {screen === 'playing' && (
                 <>
+                  <span
+                    className="material-icons pp-ctrl-icon"
+                    title={rotated ? 'Hochkant' : 'Querformat drehen'}
+                    onClick={toggleRotate}
+                  >
+                    screen_rotation
+                  </span>
                   <span className="material-icons pp-ctrl-icon" title="Pause" onClick={togglePause}>
                     {paused ? 'play_arrow' : 'pause'}
                   </span>
@@ -176,31 +278,43 @@ export function PingPong() {
             </div>
           </div>
 
-          <div className="pp-console">
-            <canvas
-              ref={canvasRef}
-              className="pp-canvas"
-              width={CANVAS_WIDTH}
-              height={CANVAS_HEIGHT}
-              onTouchMove={handleTouchMove}
-            />
-
-            {screen === 'ended' && (
-              <div className="pp-overlay">
-                <h2>{endInfo.title}</h2>
-                <p>{endInfo.message}</p>
-                <button type="button" onClick={backToMenu}>NOCHMAL</button>
-              </div>
+          <div className="pp-play-stage">
+            {showSideZones && (
+              <SideZone label="Kelle steuern links" onMove={setPaddleFromRatio} />
             )}
 
-            {screen === 'playing' && paused && (
-              <div className="pp-overlay">
-                <h2>PAUSIERT</h2>
-              </div>
+            <div className="pp-console">
+              <canvas
+                ref={canvasRef}
+                className="pp-canvas"
+                width={CANVAS_WIDTH}
+                height={CANVAS_HEIGHT}
+                onTouchMove={handleTouchMove}
+              />
+
+              {screen === 'ended' && (
+                <div className="pp-overlay">
+                  <h2>{endInfo.title}</h2>
+                  <p>{endInfo.message}</p>
+                  <button type="button" onClick={backToMenu}>
+                    NOCHMAL
+                  </button>
+                </div>
+              )}
+
+              {screen === 'playing' && paused && (
+                <div className="pp-overlay">
+                  <h2>PAUSIERT</h2>
+                </div>
+              )}
+            </div>
+
+            {showSideZones && (
+              <SideZone label="Kelle steuern rechts" onMove={setPaddleFromRatio} />
             )}
           </div>
 
-          {screen === 'playing' && !paused && (
+          {showTouchButtons && (
             <div className="pp-touch-controls" aria-label="Kelle steuern">
               <button
                 type="button"
@@ -244,8 +358,10 @@ export function PingPong() {
           <p className="pp-hint-desktop">
             Am PC: Cursor-Tasten ↑ ↓ – nicht Maus oder Touchpad
           </p>
-          <p className="pp-hint-touch">
-            Halte HOCH oder RUNTER – volle Breite, unter dem Spielfeld
+          <p className={`pp-hint-touch${rotated ? ' pp-hint-touch--rotated' : ''}`}>
+            {rotated
+              ? 'Finger links oder rechts neben dem Feld bewegen'
+              : 'HOCH/RUNTER halten · oder Drehen-Button für Querformat'}
           </p>
         </>
       )}

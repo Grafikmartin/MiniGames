@@ -216,6 +216,17 @@
   width: 100%;
 }
 
+.pp-play-stage {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pp-side-zone {
+  display: none;
+}
+
 .pp-canvas {
   display: block;
   width: 100%;
@@ -293,9 +304,9 @@
 
 .pp-touch-btn {
   width: 100%;
-  min-height: 56px;
+  min-height: 88px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.04em;
   background: #000;
   color: #33ff33;
@@ -336,19 +347,135 @@
   }
 
   .pp-touch-btn {
-    min-height: 52px;
-    font-size: 11px;
+    min-height: 80px;
+    font-size: 13px;
   }
 }
 
 @media (max-height: 700px) {
   .pp-touch-btn {
-    min-height: 44px;
-    font-size: 10px;
+    min-height: 72px;
+    font-size: 12px;
   }
 
   .pp-touch-controls {
-    gap: 6px;
+    gap: 8px;
     margin-top: 8px;
+  }
+}
+
+/* Querformat / gedreht: Seitenstreifen statt Hoch/Runter */
+.pp-wrapper--rotated {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+}
+
+.pp-wrapper--rotated .pp-header {
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.pp-wrapper--rotated .pp-play-stage {
+  flex: 1;
+  min-height: 0;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.pp-wrapper--rotated .pp-console {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 4px;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+.pp-wrapper--rotated .pp-canvas {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.pp-wrapper--rotated .pp-side-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 clamp(56px, 16vw, 96px);
+  min-height: 0;
+  background: #061206;
+  border: 2px solid #1a661a;
+  touch-action: none;
+  user-select: none;
+  cursor: ns-resize;
+}
+
+.pp-side-zone-mark {
+  color: #1a661a;
+  font-size: 18px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.pp-wrapper--rotated .pp-side-zone:active {
+  background: #0a1a0a;
+  border-color: #33ff33;
+}
+
+.pp-wrapper--rotated .pp-touch-controls {
+  display: none !important;
+}
+
+.pp-wrapper--rotated .pp-hint-touch {
+  display: block;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.pp-hint-touch--rotated {
+  color: #33ff33;
+  opacity: 0.7;
+}
+
+/*
+  Fallback: Gerät bleibt hochkant → UI als Querformat drehen,
+  damit Seitenstreifen an den Daumen liegen, wenn man das Handy quer hält.
+*/
+@media (max-width: 900px) and (orientation: portrait) {
+  .pp-wrapper--rotated {
+    position: fixed;
+    z-index: 40;
+    left: 50%;
+    top: 50%;
+    width: 100dvh;
+    height: 100dvw;
+    max-width: none;
+    padding: 8px max(8px, env(safe-area-inset-bottom)) 8px max(8px, env(safe-area-inset-top));
+    box-sizing: border-box;
+    transform: translate(-50%, -50%) rotate(90deg);
+    background: #000;
+    justify-content: flex-start;
+  }
+
+  .pp-wrapper--rotated .pp-play-stage {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .pp-wrapper--rotated .pp-side-zone {
+    flex-basis: clamp(64px, 14vh, 100px);
   }
 }
