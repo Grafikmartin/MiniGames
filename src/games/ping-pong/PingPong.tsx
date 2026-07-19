@@ -24,6 +24,7 @@ export function PingPong() {
     abortGame,
     backToMenu,
     handleTouchMove,
+    setPaddleDir,
     enterFullscreen,
     exitFullscreen,
   } = usePingPongGame(canvasRef);
@@ -199,8 +200,52 @@ export function PingPong() {
             )}
           </div>
 
+          {screen === 'playing' && !paused && (
+            <div className="pp-touch-controls" aria-label="Kelle steuern">
+              <button
+                type="button"
+                className="pp-touch-btn"
+                aria-label="Kelle hoch"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  setPaddleDir('up');
+                }}
+                onPointerUp={(e) => {
+                  e.preventDefault();
+                  setPaddleDir(null);
+                }}
+                onPointerCancel={() => setPaddleDir(null)}
+                onLostPointerCapture={() => setPaddleDir(null)}
+              >
+                ▲ HOCH
+              </button>
+              <button
+                type="button"
+                className="pp-touch-btn"
+                aria-label="Kelle runter"
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                  setPaddleDir('down');
+                }}
+                onPointerUp={(e) => {
+                  e.preventDefault();
+                  setPaddleDir(null);
+                }}
+                onPointerCancel={() => setPaddleDir(null)}
+                onLostPointerCapture={() => setPaddleDir(null)}
+              >
+                ▼ RUNTER
+              </button>
+            </div>
+          )}
+
           <p className="pp-hint-desktop">
             Am PC: Cursor-Tasten ↑ ↓ – nicht Maus oder Touchpad
+          </p>
+          <p className="pp-hint-touch">
+            Halte HOCH oder RUNTER – volle Breite, unter dem Spielfeld
           </p>
         </>
       )}

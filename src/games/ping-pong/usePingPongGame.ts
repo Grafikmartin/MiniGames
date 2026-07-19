@@ -414,6 +414,7 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
   const togglePause = useCallback(() => {
     if (screenRef.current !== 'playing') return;
     pausedRef.current = !pausedRef.current;
+    if (pausedRef.current) userPaddleRef.current.dy = 0;
     syncUI();
   }, [syncUI]);
 
@@ -439,14 +440,19 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault();
-    if (!runningRef.current || pausedRef.current || e.touches.length === 0) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleY = CANVAS_HEIGHT / rect.height;
-    const touchY = (e.touches[0].clientY - rect.top) * scaleY;
-    userPaddleRef.current.y = Math.max(0, Math.min(CANVAS_HEIGHT - PADDLE_HEIGHT, touchY - PADDLE_HEIGHT / 2));
-  }, [canvasRef]);
+    // Absichtliche No-Op: Steuerung läuft über die Tasten unter dem Spielfeld,
+    // damit der Finger die eigene Kelle nicht verdeckt.
+  }, []);
+
+  const setPaddleDir = useCallback((dir: 'up' | 'down' | null) => {
+    if (!runningRef.current || pausedRef.current) {
+      userPaddleRef.current.dy = 0;
+      return;
+    }
+    if (dir === 'up') userPaddleRef.current.dy = -paddleSpeedRef.current;
+    else if (dir === 'down') userPaddleRef.current.dy = paddleSpeedRef.current;
+    else userPaddleRef.current.dy = 0;
+  }, []);
 
   useEffect(() => {
     updateHighscores();
@@ -507,6 +513,7 @@ export function usePingPongGame(canvasRef: React.RefObject<HTMLCanvasElement | n
     abortGame,
     backToMenu,
     handleTouchMove,
+    setPaddleDir,
     enterFullscreen,
     exitFullscreen,
   };
