@@ -103,6 +103,49 @@
   color: #33ff33;
 }
 
+.vg-difficulty {
+  width: 100%;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.vg-difficulty-label {
+  font-size: 8px;
+  color: #33ff33;
+  opacity: 0.85;
+}
+
+.vg-difficulty-btns {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.vg-diff-btn {
+  flex: 1;
+  font-family: inherit;
+  font-size: 8px;
+  padding: 10px 8px;
+  min-height: 40px;
+  background: #000;
+  color: #33ff33;
+  border: 2px solid #555;
+  cursor: pointer;
+}
+
+.vg-diff-btn--active {
+  border-color: #33ff33;
+  background: #0a1a0a;
+}
+
+.vg-diff-btn:hover {
+  border-color: #33ff33;
+}
+
 .vg-actions {
   margin-top: 8px;
 }

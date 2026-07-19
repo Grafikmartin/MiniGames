@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
+  DIFFICULTY_LABELS,
   checkWin,
   createEmptyBoard,
   dropDisc,
   findBestMove,
   isBoardFull,
   type Board,
+  type Difficulty,
   type Mark,
 } from './gameLogic';
 import { vgSound, unlockAudio } from './sound';
@@ -79,14 +81,20 @@ export function VierGewinnt() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [inputLocked, setInputLocked] = useState(false);
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
 
   const boardRef = useRef(board);
+  const difficultyRef = useRef(difficulty);
   const computerTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const turnIdRef = useRef(0);
 
   useEffect(() => {
     boardRef.current = board;
   }, [board]);
+
+  useEffect(() => {
+    difficultyRef.current = difficulty;
+  }, [difficulty]);
 
   const playDropSound = useCallback((mark: Mark) => {
     unlockAudio();
@@ -125,7 +133,7 @@ export function VierGewinnt() {
     computerTimeoutRef.current = setTimeout(() => {
       if (turnId !== turnIdRef.current) return;
 
-      const col = findBestMove(boardRef.current.map((r) => [...r]));
+      const col = findBestMove(boardRef.current.map((r) => [...r]), difficultyRef.current);
       const result = computeMove(boardRef.current, col, 'computer');
       if (!result) {
         setInputLocked(false);
@@ -272,6 +280,25 @@ export function VierGewinnt() {
       </div>
 
       <p className="vg-status"><StatusText text={status} /></p>
+
+      {(phase === 'idle' || phase === 'ended') && (
+        <div className="vg-difficulty" role="group" aria-label="Schwierigkeit">
+          <span className="vg-difficulty-label">Schwierigkeit</span>
+          <div className="vg-difficulty-btns">
+            {(Object.keys(DIFFICULTY_LABELS) as Difficulty[]).map((level) => (
+              <button
+                key={level}
+                type="button"
+                className={`vg-diff-btn${difficulty === level ? ' vg-diff-btn--active' : ''}`}
+                aria-pressed={difficulty === level}
+                onClick={() => setDifficulty(level)}
+              >
+                {DIFFICULTY_LABELS[level].toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="vg-actions">
         {phase === 'idle' || phase === 'ended' ? (
