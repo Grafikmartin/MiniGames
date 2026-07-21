@@ -179,9 +179,97 @@ function scorePlacement(board: Board, row: number, col: number, mark: Mark): num
   return score;
 }
 
+/** Zelle ist leer und per Schwerkraft in diesem Zug bespielbar. */
+export function isDropTarget(board: Board, row: number, col: number): boolean {
+  if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
+  return board[row][col] === null && dropDisc(board, col) === row;
+}
+
+export interface OpenTwoThreat {
+  /** Spielbare End-Spalten, die den Zweier blocken/erweitern. */
+  endCols: number[];
+  /** Anzahl spielbarer Enden (1 oder 2). */
+  playableEnds: number;
+  /** Beide Enden frei und spielbar → Vorstufe zur Fork-Gefahr. */
+  doubleOpen: boolean;
+}
+
+const OPEN_TWO_DIRS = [
+  { r: 0, c: 1 },
+  { r: 1, c: 0 },
+  { r: 1, c: 1 },
+  { r: 1, c: -1 },
+] as const;
+
 /**
- * Schwer: gewinnt/blockt sofort, vermeidet Züge die dem Spieler einen 4er ermöglichen,
- * baut eigene Drohungen auf und bevorzugt zentrale, druckvolle Felder.
+ * Findet offene Zweier von `mark`: zwei benachbarte Steine mit mind. einem
+ * spielbaren freien Ende (Schwerkraft beachten). Horizontal, vertikal, Diagonalen.
+ *
+ * Muster z. B. `. X X .` – ungebremst oft Vorstufe zu offenem Dreier und Fork.
+ */
+export function findOpenTwoThreats(board: Board, mark: Mark): OpenTwoThreat[] {
+  const threats: OpenTwoThreat[] = [];
+  const seen = new Set<string>();
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (board[row][col] !== mark) continue;
+
+      for (const { r, c } of OPEN_TWO_DIRS) {
+        const row2 = row + r;
+        const col2 = col + c;
+        if (row2 < 0 || row2 >= ROWS || col2 < 0 || col2 >= COLS) continue;
+        if (board[row2][col2] !== mark) continue;
+
+        // Jedes Paar nur einmal (Startzelle ist „früher“ in Scan-Richtung)
+        const prevRow = row - r;
+        const prevCol = col - c;
+        if (
+          prevRow >= 0 && prevRow < ROWS &&
+          prevCol >= 0 && prevCol < COLS &&
+          board[prevRow][prevCol] === mark
+        ) {
+          continue;
+        }
+
+        const endA = { row: row - r, col: col - c };
+        const endB = { row: row2 + r, col: col2 + c };
+        const playableEnds = [endA, endB].filter((end) =>
+          isDropTarget(board, end.row, end.col),
+        );
+
+        if (playableEnds.length === 0) continue;
+
+        // Genug Raum für einen Dreier: mind. ein spielbares Ende verlängert den Zweier.
+        const endCols = [...new Set(playableEnds.map((e) => e.col))];
+        const key = `${row},${col},${r},${c}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        threats.push({
+          endCols,
+          playableEnds: playableEnds.length,
+          doubleOpen: playableEnds.length >= 2,
+        });
+      }
+    }
+  }
+
+  return threats;
+}
+
+/** Spalten, die mindestens einen offenen Zweier von `mark` blockieren. */
+export function findOpenTwoBlockColumns(board: Board, mark: Mark): number[] {
+  const cols = new Set<number>();
+  for (const threat of findOpenTwoThreats(board, mark)) {
+    for (const col of threat.endCols) cols.add(col);
+  }
+  return [...cols];
+}
+
+/**
+ * Schwer: gewinnt/blockt sofort, blockt offene Zweier früh, vermeidet Züge die dem
+ * Spieler einen 4er ermöglichen, baut eigene Drohungen auf.
  */
 function findBestMoveHard(board: Board): number {
   const computer: Mark = 'computer';
@@ -194,6 +282,12 @@ function findBestMoveHard(board: Board): number {
 
   const mustBlock = findWinningColumns(board, player);
   if (mustBlock.length > 0) return mustBlock[0];
+
+  const playerOpenTwos = findOpenTwoThreats(board, player);
+  const openTwoBlockCols = new Set(playerOpenTwos.flatMap((t) => t.endCols));
+  const doubleOpenBlockCols = new Set(
+    playerOpenTwos.filter((t) => t.doubleOpen).flatMap((t) => t.endCols),
+  );
 
   let bestCol = valid[0];
   let bestScore = -Infinity;
@@ -219,8 +313,24 @@ function findBestMoveHard(board: Board): number {
       score += 5_000; // Doppel-Drohung / Fork
     }
 
-    // Zusätzlich prüfen: setzt der Spieler auf eine Spalte und öffnet uns darüber eine Chance?
-    // (bereits über Threats abgedeckt)
+    // Offene Zweier des Gegners blocken (vor offenem Dreier / Fork)
+    if (doubleOpenBlockCols.has(col)) {
+      score += 6_000;
+    } else if (openTwoBlockCols.has(col)) {
+      score += 3_500;
+    }
+
+    // Nach dem Zug: verbleibende offene Zweier des Spielers bestrafen
+    const remainingPlayerTwos = findOpenTwoThreats(board, player);
+    for (const threat of remainingPlayerTwos) {
+      score -= threat.doubleOpen ? 4_500 : 2_200;
+    }
+
+    // Eigene offene Zweier belohnen (Druck aufbauen)
+    const ownTwos = findOpenTwoThreats(board, computer);
+    for (const threat of ownTwos) {
+      score += threat.doubleOpen ? 1_800 : 700;
+    }
 
     score += scorePlacement(board, row, col, computer);
 

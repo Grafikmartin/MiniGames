@@ -4,7 +4,10 @@ import {
   createEmptyBoard,
   dropDisc,
   findBestMove,
+  findOpenTwoBlockColumns,
+  findOpenTwoThreats,
   findWinningColumns,
+  isDropTarget,
   wouldWinAt,
   type Board,
   type Mark,
@@ -20,11 +23,9 @@ function place(board: Board, col: number, mark: Mark) {
 describe('Vier gewinnt KI', () => {
   it('gewinnt im Schwer-Modus, wenn ein 4er möglich ist', () => {
     const board = createEmptyBoard();
-    // Computer hat drei in einer Reihe unten: Spalten 0,1,2
     place(board, 0, 'computer');
     place(board, 1, 'computer');
     place(board, 2, 'computer');
-    // Füller, damit nicht nur Mitte attraktiv ist
     place(board, 6, 'player');
 
     expect(findBestMove(board, 'hard')).toBe(3);
@@ -42,29 +43,16 @@ describe('Vier gewinnt KI', () => {
 
   it('vermeidet im Schwer-Modus Züge, die dem Spieler einen Sofort-4er geben', () => {
     const board = createEmptyBoard();
-    /*
-      Situation: Wenn Computer in Spalte 3 setzt, landet er auf Höhe 1 und
-      öffnet dem Spieler darüber/daneben einen Gewinn – konstruiert als:
-      Spieler hat drei horizontal auf Reihe 5 (unten) in Spalten 1,2,4 mit Lücke 3.
-      Computer darf nicht die Lücke ignorieren – Block hat Vorrang.
-      Separater Fall: Zug in Spalte X lässt Spieler gewinnen.
-    */
-    // Unten: P P _ P  → Block Spalte 2 ist Pflicht
     place(board, 0, 'player');
     place(board, 1, 'player');
     place(board, 3, 'player');
     place(board, 6, 'computer');
 
-    const move = findBestMove(board, 'hard');
-    expect(move).toBe(2);
+    expect(findBestMove(board, 'hard')).toBe(2);
   });
 
   it('vermeidet einen Zug, der dem Spieler danach den Gewinn freigibt', () => {
     const board = createEmptyBoard();
-    // Aufbau: drei Spielersteine vertikal in Spalte 1 (Reihen 5,4,3), Spalte 1 Reihe 2 leer.
-    // Wenn Computer irgendwo spielt und NICHT Spalte 1 blockt, gewinnt Spieler.
-    // Zusätzlich: Spalte 0 so füllen, dass Computer dort "verlockend" wirkt aber
-    // nach dem Zug Spieler in Spalte 1 gewinnt – Block muss trotzdem kommen.
     place(board, 1, 'player');
     place(board, 1, 'player');
     place(board, 1, 'player');
@@ -94,15 +82,6 @@ describe('Vier gewinnt KI', () => {
 
   it('Schwer wählt unter sicheren Zügen kein Setup für den Gegner', () => {
     const board = createEmptyBoard();
-    /*
-      Brett (unten = Reihe 5):
-      Spalte: 0 1 2 3 4 5 6
-      Wenn Computer in 3 setzt und darunter schon Struktur ist...
-
-      Einfacherer Fall: Spieler hat 2er, Computer könnte Mitte nehmen
-      und dabei eine Lücke öffnen – wir prüfen, dass nach dem Zug
-      der Spieler keinen Sofortgewinn hat.
-    */
     place(board, 2, 'player');
     place(board, 4, 'player');
     place(board, 3, 'computer');
@@ -116,5 +95,69 @@ describe('Vier gewinnt KI', () => {
     for (let col = 0; col < COLS; col++) {
       expect(wouldWinAt(board, col, 'player')).toBe(false);
     }
+  });
+});
+
+describe('Offene Zweier', () => {
+  it('erkennt horizontales Muster . X X . mit beiden spielbaren Enden', () => {
+    const board = createEmptyBoard();
+    place(board, 1, 'player');
+    place(board, 2, 'player');
+
+    expect(isDropTarget(board, 5, 0)).toBe(true);
+    expect(isDropTarget(board, 5, 3)).toBe(true);
+
+    const threats = findOpenTwoThreats(board, 'player');
+    expect(threats.some((t) => t.doubleOpen)).toBe(true);
+    expect(findOpenTwoBlockColumns(board, 'player').sort()).toEqual([0, 3]);
+  });
+
+  it('blockt im Schwer-Modus mindestens ein Ende eines offenen Zweiers', () => {
+    const board = createEmptyBoard();
+    place(board, 1, 'player');
+    place(board, 2, 'player');
+    place(board, 5, 'computer');
+    place(board, 6, 'computer');
+
+    const move = findBestMove(board, 'hard');
+    expect([0, 3]).toContain(move);
+  });
+
+  it('blockt offenen Zweier auch wenn die Mitte verlockend wäre', () => {
+    const board = createEmptyBoard();
+    place(board, 2, 'player');
+    place(board, 3, 'player');
+    place(board, 6, 'computer');
+
+    const move = findBestMove(board, 'hard');
+    expect([1, 4]).toContain(move);
+  });
+
+  it('erkennt diagonalen offenen Zweier', () => {
+    const board = createEmptyBoard();
+    // Diagonale: P(5,0) – P(4,1), spielbares Ende bei (3,2)
+    place(board, 0, 'player');
+    place(board, 1, 'computer');
+    place(board, 1, 'player');
+    place(board, 2, 'computer');
+    place(board, 2, 'computer');
+    expect(isDropTarget(board, 3, 2)).toBe(true);
+
+    const threats = findOpenTwoThreats(board, 'player');
+    expect(threats.length).toBeGreaterThan(0);
+    expect(findOpenTwoBlockColumns(board, 'player')).toContain(2);
+  });
+
+  it('ignoriert Enden ohne Schwerkraft-Treffer', () => {
+    const board = createEmptyBoard();
+    place(board, 1, 'computer');
+    place(board, 2, 'computer');
+    place(board, 1, 'player');
+    place(board, 2, 'player');
+    // P P liegen auf Reihe 4; Enden 0/3 auf Reihe 4 sind nicht dropbar
+    const floating = findOpenTwoThreats(board, 'player').find(
+      (t) => t.doubleOpen && t.endCols.includes(0) && t.endCols.includes(3),
+    );
+    expect(floating).toBeUndefined();
   });
 });
